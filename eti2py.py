@@ -280,7 +280,7 @@ def gen_fields(e, st, dt, us, sizes, version, o=sys.stdout, comment=False, off=0
                 def_str = f"b'{version}'"
             print(f"""    {m.get("name")}: bytes = {def_str}""", end='', file=o)
         else:
-            if m.get('type') in ('MessageHeaderInComp', 'MessageHeaderOutComp'):
+            if m.get('type') in ('MessageHeaderInComp', 'MessageHeaderOutComp', 'MessageHeaderComp'):
                 l = sizes[e.get('name')]
                 if l == 0:
                     def_str = f'field(default_factory=lambda : {m.get("type")}(TemplateID={e.get("numericID")}))'
