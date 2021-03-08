@@ -194,7 +194,11 @@ def is_var_string(t):
     return False
 
 def is_unsigned(t):
-    return t.get('minValue') == '0'
+    v = t.get('minValue')
+    return v is not None and not v.startswith('-')
+
+def is_counter(t):
+    return t.get('type') == 'Counter'
 
 def type_to_fmt(t):
     if is_padding(t):
@@ -262,8 +266,10 @@ def gen_fields(e, st, dt, us, sizes, version, o=sys.stdout, comment=False, off=0
             nv = t.get('noValue')
             if nv:
                 def_str = nv
-            if def_str == '0x00':
+            if def_str == '0x00' or is_counter(t):
                 def_str = '0'
+            elif def_str.startswith('0x80'):
+                def_str = str(2**(8*int(t.get('size')) - 1) * -1)
             print(f'    {m.get("name")}: int = {def_str}', end='', file=o)
             atts.append(pp_int_type(t))
             if is_enum(t):
