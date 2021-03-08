@@ -517,7 +517,7 @@ def gen_message_flows(mf, o=sys.stdout):
     def f(xs):
         print('[ ', end='', file=o)
         for name, cond, cs in xs:
-            s = 'None' if name is None else f'TemplateID.{name}'
+            s = name
             t = 'None' if cond is None else f"'{cond}'"
             print(f'( {s}, {t}, ', end='', file=o)
             f(cs)
