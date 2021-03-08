@@ -253,7 +253,7 @@ def group_members(e, dt):
         xs.append(ms)
     return xs
 
-def gen_fields(e, st, dt, us, sizes, version, o=sys.stdout, comment=False, off=0, fname=None):
+def gen_fields(e, st, dt, us, sizes, min_sizes, version, o=sys.stdout, comment=False, off=0, fname=None):
     for m in e:
         if comment:
             print('    #', end='')
@@ -289,9 +289,8 @@ def gen_fields(e, st, dt, us, sizes, version, o=sys.stdout, comment=False, off=0
             if m.get('type') in ('MessageHeaderInComp', 'MessageHeaderOutComp', 'MessageHeaderComp'):
                 l = sizes[e.get('name')]
                 if l == 0:
-                    def_str = f'field(default_factory=lambda : {m.get("type")}(TemplateID={e.get("numericID")}))'
-                else:
-                    def_str = f'field(default_factory=lambda : {m.get("type")}({l}, {e.get("numericID")}))'
+                    l = min_sizes[e.get('name')]
+                def_str = f'field(default_factory=lambda : {m.get("type")}({l}, {e.get("numericID")}))'
             else:
                 def_str = f'field(default_factory={m.get("type")})'
             if m.get('minCardinality') is None:
@@ -310,7 +309,7 @@ def gen_fields(e, st, dt, us, sizes, version, o=sys.stdout, comment=False, off=0
 
         s = st.get(m.get('type'))
         if s:
-            gen_fields(s, st, dt, us, sizes, version, o, comment=True, off=off, fname=f"{e.get('name')}.{m.get('name')}")
+            gen_fields(s, st, dt, us, sizes, min_sizes, version, o, comment=True, off=off, fname=f"{e.get('name')}.{m.get('name')}")
 
         if off is not None:
             l = sizes[m.get('type')]
@@ -323,7 +322,7 @@ def gen_fields(e, st, dt, us, sizes, version, o=sys.stdout, comment=False, off=0
 def gen_block(name, e, st, dt, us, sizes, min_sizes, max_sizes, version, o=sys.stdout):
     print(f'@dataclass\nclass {name}:')
     print(f'    sizes = ({min_sizes[name]}, {max_sizes[name]})\n', file=o)
-    gen_fields(e, st, dt, us, sizes, version, o)
+    gen_fields(e, st, dt, us, sizes, min_sizes, version, o)
 
     ms = group_members(e, dt)
 
