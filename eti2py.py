@@ -150,6 +150,14 @@ def enumerize(i, klasse):
 ''', file=o)
 
 def gen_enums(dt, ts, o=sys.stdout):
+    def pp_nv(e):
+        nv = e.get('noValue')
+        if nv.startswith('0x0'):
+            nv = '0'
+        if nv:
+            print(f'    NO_VALUE = {nv}', file=o)
+
+
     print('class TemplateID(IntEnum):', file=o)
     for tid, name in ts:
         print(f'    {name} = {tid}', file=o)
@@ -162,13 +170,15 @@ def gen_enums(dt, ts, o=sys.stdout):
                 print(f'class {name}(IntEnum):', file=o)
                 for v in vs:
                     print(f'    {v.get("name").upper()} = {v.get("value")}', file=o)
+                pp_nv(e)
                 print(file=o)
-        elif e.get('type') == 'char' and e.get('size') == '1':
+        elif e.get('rootType') == 'String' and e.get('size') == '1':
             vs = e.findall('ValidValue')
             if vs:
                 print(f'class {name}(IntEnum):', file=o)
                 for v in vs:
                     print(f'''    {v.get("name").upper()} = ord('{v.get("value")}')''', file=o)
+                pp_nv(e)
                 print(file=o)
 
 def is_int(t):
@@ -268,6 +278,7 @@ def gen_fields(e, st, dt, us, sizes, min_sizes, version, o=sys.stdout, comment=F
         if is_padding(t):
             print(f'    # PADDING={t.get("size")}', end='', file=o)
         elif is_int(t):
+            atts.append(pp_int_type(t))
             def_str = '0'
             nv = t.get('noValue')
             if nv:
@@ -276,10 +287,10 @@ def gen_fields(e, st, dt, us, sizes, min_sizes, version, o=sys.stdout, comment=F
                 def_str = '0'
             elif def_str.startswith('0x80'):
                 def_str = str(2**(8*int(t.get('size')) - 1) * -1)
-            print(f'    {m.get("name")}: int = {def_str}', end='', file=o)
-            atts.append(pp_int_type(t))
             if is_enum(t):
                 atts.append(f'enum:{t.get("name")}')
+                def_str = f"{t.get('name')}({def_str})"
+            print(f'    {m.get("name")}: int = {def_str}', end='', file=o)
             scale = t.get('precision')
             if scale:
                 atts.append(f'scale:{scale}')
