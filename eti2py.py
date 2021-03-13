@@ -141,6 +141,12 @@ def rstrip_dc(x):
             x.__setattr__(k, x.__getattribute__(k).rstrip(b'\\0'))
         elif is_dataclass(v):
             rstrip_dc(v)
+
+def enumerize(i, klasse):
+    try:
+        return klasse(i)
+    except ValueError:
+        return i
 ''', file=o)
 
 def gen_enums(dt, ts, o=sys.stdout):
@@ -443,6 +449,11 @@ def gen_unpack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
         l = sum(sizes[m.get("type")] for m in xs)
         if is_elementary(t):
             print(f'        {args} = self.st({i}).unpack_from(buf, {off_str})', file=o)
+            es = [ m for m in xs if is_enum(dt.get(m.get('type'))) ]
+            lhs = ', '.join('self.' + e.get('name') for e in es)
+            rhs = ', '.join(f"enumerize(self.{e.get('name')}, {dt.get(e.get('type')).get('name')})" for e in es)
+            if lhs:
+                print(f'        {lhs} = {rhs}', file=o)
             if dyn:
                 print('f    o += l', file=o)
         else:
