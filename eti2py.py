@@ -150,8 +150,10 @@ def enumerize(i, klasse):
 ''', file=o)
 
 def gen_enums(dt, ts, o=sys.stdout):
-    def pp_nv(e):
+    def pp_nv(e, vs):
         nv = e.get('noValue')
+        if nv in vs:
+            return
         if nv.startswith('0x0'):
             nv = '0'
         if nv:
@@ -167,18 +169,21 @@ def gen_enums(dt, ts, o=sys.stdout):
             vs = e.findall('ValidValue')
             if vs:
                 vs.sort(key = lambda x : int(x.get('value')))
+                ws = [ v.get('value') for v in vs ]
                 print(f'class {name}(IntEnum):', file=o)
                 for v in vs:
                     print(f'    {v.get("name").upper()} = {v.get("value")}', file=o)
-                pp_nv(e)
+                pp_nv(e, ws)
                 print(file=o)
         elif e.get('rootType') == 'String' and e.get('size') == '1':
             vs = e.findall('ValidValue')
             if vs:
+                vs.sort(key = lambda x : x.get('value'))
+                ws = [ v.get('value') for v in vs ]
                 print(f'class {name}(IntEnum):', file=o)
                 for v in vs:
                     print(f'''    {v.get("name").upper()} = ord('{v.get("value")}')''', file=o)
-                pp_nv(e)
+                pp_nv(e, ws)
                 print(file=o)
 
 def is_int(t):
