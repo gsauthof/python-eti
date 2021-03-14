@@ -6,6 +6,8 @@ It's a private research project for investigating how binary
 serialisation/deserialization code can profit from modern Python
 features.
 
+It also support EOBI (market data) protocol descriptions.
+
 2021, Georg Sauthoff <mail@gms.tf>
 
 
@@ -28,7 +30,7 @@ As an example for how the generated code looks you can check out
 the [output][ex] for the T7 ETI version 9 specification.
 
 
-## ETI Protocol Descriptions
+## Protocol Descriptions
 
 Deutsche Börse publishes the ETI protocol descriptions on their
 web sites. Since they are sometimes kind of hard to find I include
@@ -51,6 +53,24 @@ some links:
   or via [Eurex system
   documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8/Release-8.0-1546104?frag=1546112)
 
+EOBI descriptions:
+
+- [EOBI
+  9.0](https://www.xetra.com/resource/blob/2221290/00792edace1aaa799a42c67a7638efbf/data/T7_EOBI_XML_Representation_v.9.0.1.zip)
+  via [Xetra system
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release9/Release-9.0-1698786?frag=1698808) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-releases/T7-Releases-2438492?frag=2438494)
+- [ETI
+  8.1](https://www.eurex.com/resource/blob/2128192/2209fe1a6f0a78a27baf6411698690b0/data/T7_EOBI_XML_Representation_v.8.1.1.zip)
+  via [Xetra system
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release81/Release-8.1-1698746?frag=1698768)
+  or via [Eurex system
+  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release81/Release-8.1-1698368?frag=1698376)
+- [ETI
+  8.0](https://www.eurex.com/resource/blob/1741872/baeb2d87c8cc518f2ff2738a74356548/data/T7_EOBI_XML_Representation_v.8.0.3.zip)
+  via [Xetra system
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release8/Release-8.0-1449522?frag=1601504)
+  or via [Eurex system
+  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8/Release-8.0-1546104?frag=1546112)
 
 ## Python Notes
 
