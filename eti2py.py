@@ -194,7 +194,9 @@ def is_int(t):
 
 def is_enum(t):
     if t is not None:
-        return t.find('ValidValue') is not None
+        r = t.get('rootType')
+        if r == 'int' or (r == 'String' and t.get('size') == '1'):
+            return t.find('ValidValue') is not None
     return False
 
 pad_re = re.compile('Pad[1-9]')
