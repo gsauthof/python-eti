@@ -24,10 +24,20 @@ purposes, such as:
 - writing a ETI traffic generator or test-server in Python
 
 
-## Example
+## Examples
 
 As an example for how the generated code looks you can check out
 the [output][ex] for the T7 ETI version 9 specification.
+
+This repository also contains a simple ETI-Client
+(`eti_client.py`) and a small ETI-Server (`eti_server.py`) that
+can be used to ping pong some ETI messages over the network. The
+server runs forever and replies to each request with some context
+dependent response message or messages (as specified in the
+protocol specification). If alternative response types are
+possible, a choice is made by random. Since the server dumps each
+received ETI message to stdout it can also be used as ad-hoc
+protocol dissector when developing/testing an ETI client.
 
 
 ## Protocol Descriptions

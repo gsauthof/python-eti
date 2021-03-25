@@ -2,6 +2,9 @@
 
 # Dummy ETI demo server
 #
+#
+# Requires at least Python 3.7.
+#
 # SPDX-FileCopyrightText: © 2021 Georg Sauthoff <mail@gms.tf>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -79,8 +82,12 @@ async def server(host, port):
 def main():
     host = sys.argv[1]
     port = int(sys.argv[2])
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
+            format='%(asctime)s [%(name)s] %(levelname).1s   %(message)s')
     asyncio.run(server(host, port))
 
 if __name__ == '__main__':
-    sys.exit(main())
+    try:
+        sys.exit(main())
+    except KeyboardInterrupt:
+        log.info('quitting due to SIGINT')
