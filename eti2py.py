@@ -307,7 +307,9 @@ def gen_fields(e, st, dt, us, sizes, min_sizes, version, o=sys.stdout, comment=F
             # when packing, struct.pack right-pads missing bytes with zero bytes
             def_str = "b''"
             if m.get('type') == 'DefaultCstmApplVerID':
-                def_str = f"b'{version}'"
+                def_str = f"b'{version[0]}'"
+            if m.get('type') == 'DefaultCstmApplVerSubID':
+                def_str = f"b'{version[1]}'"
             print(f"""    {m.get("name")}: bytes = {def_str}""", end='', file=o)
         else:
             if m.get('type') in ('MessageHeaderInComp', 'MessageHeaderOutComp', 'MessageHeaderComp'):
@@ -569,7 +571,7 @@ def main():
     filename = sys.argv[1]
     d = ET.parse(filename)
 
-    version = d.getroot().get('version')
+    version = (d.getroot().get('version'), d.getroot().get('subVersion'))
     dt = get_data_types(d)
     st = get_structs(d)
     ts = get_templates(st)
