@@ -14,6 +14,8 @@ import sys
 
 import eti.v9_0 as eti
 
+from dressup import pformat
+
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +31,7 @@ async def read_everything(stream):
             bs += rest
             m = eti.unpack_from(bs)
             m.rstrip()
-            log.info(f'Received: {m}')
+            log.info(f'Received: {pformat(m, width=45)}')
     except asyncio.IncompleteReadError:
         log.info('Got EOF on read end')
 

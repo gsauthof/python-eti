@@ -16,6 +16,8 @@ import sys
 
 import eti.v9_0 as eti
 
+from dressup import pformat
+
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ async def serve_session(rstream, wstream):
             bs += rest
             m = eti.unpack_from(bs)
             m.rstrip()
-            log.info(f'Received: {m}')
+            log.info(f'Received: {pformat(m, width=45)}')
 
             xs = eti.request2response[m.MessageHeaderIn.TemplateID]
 
