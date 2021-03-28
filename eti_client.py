@@ -37,12 +37,13 @@ async def read_everything(stream):
 
 
 async def client(host, port):
-    rstream, wstream = await asyncio.open_connection(host, port)
+  rstream, wstream = await asyncio.open_connection(host, port)
 
-    reader = asyncio.create_task(read_everything(rstream))
-    # ^ Python 3.7, prior:
-    # reader = asyncio.ensure_future(read_everything(rstream))
+  reader = asyncio.create_task(read_everything(rstream))
+  # ^ Python 3.7, prior:
+  # reader = asyncio.ensure_future(read_everything(rstream))
 
+  try:
     bs = bytearray(1024)
 
     x = eti.LogonRequest()
@@ -105,7 +106,8 @@ async def client(host, port):
     wc = wstream.close()
     await wstream.wait_closed()
 
-    await asyncio.wait_for(reader, timeout=None)
+  finally:
+    await reader
 
 def main():
     host = sys.argv[1]
