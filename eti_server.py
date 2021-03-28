@@ -85,7 +85,7 @@ def main():
     host = sys.argv[1]
     port = int(sys.argv[2])
     logging.basicConfig(level=logging.INFO, datefmt='%Y-%m-%d %H:%M:%S',
-            format='%(asctime)s [%(name)s] %(levelname).1s   %(message)s')
+            format='%(asctime)s.%(msecs)03d [%(name)s] %(levelname).1s   %(message)s')
     asyncio.run(server(host, port))
 
 if __name__ == '__main__':
