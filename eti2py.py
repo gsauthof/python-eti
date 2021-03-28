@@ -352,7 +352,7 @@ def gen_block(name, e, st, dt, us, sizes, min_sizes, max_sizes, version, o=sys.s
 
     ms = group_members(e, dt)
 
-    print(f'\n    def update_length():', file=o)
+    print(f'\n    def update_length(self):', file=o)
     if sizes[name] == 0 and e.get('type') == 'Message':
         header = 'MessageHeaderOut' if e.find('Member[@name="MessageHeaderIn"]') is None else 'MessageHeaderIn'
         ls = []
@@ -421,7 +421,7 @@ def gen_pack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
                     print(f'        o = off + {off}', file=o)
                     dyn = True
                     off_str = 'o'
-                print(f'        struct.pack_into(f"<s{{self.{xs[0].get("counter")}}}", {off_str}, self.{xs[0].get("name")})', file=o)
+                print(f'        struct.pack_into(f"<{{self.{xs[0].get("counter")}}}s", buf, {off_str}, self.{xs[0].get("name")})', file=o)
                 print(f'        o += self.{xs[0].get("counter")}', file=o)
             elif xs[0].get('minCardinality') is not None:
                 if not dyn:
@@ -482,7 +482,7 @@ def gen_unpack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
                     print(f'        o = off + {off}', file=o)
                     dyn = True
                     off_str = 'o'
-                print(f'        self.{xs[0].get("name")} = struct.unpack_from(f"<s{{self.{xs[0].get("counter")}}}", {off_str})', file=o)
+                print(f'        self.{xs[0].get("name")} = struct.unpack_from(f"<{{self.{xs[0].get("counter")}}}s", buf, {off_str})', file=o)
                 print(f'        o += self.{xs[0].get("counter")}', file=o)
             elif xs[0].get('minCardinality') is not None:
                 if not dyn:
