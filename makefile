@@ -49,6 +49,9 @@ download: work/$(eti_9_0) work/$(eti_8_1) work/$(eti_8_0)
 .PHONY: all-eti
 all-eti: eti/v9_0.py eti/v8_1.py eti/v8_0.py
 
+.PHONY: all-xti
+all-xti: xti/v9_0.py xti/v8_1.py xti/v8_0.py
+
 .PHONY: all-eobi
 all-eobi: eobi/v9_0.py eobi/v8_1.py eobi/v8_0.py
 
