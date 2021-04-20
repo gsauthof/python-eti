@@ -525,7 +525,7 @@ def gen_blocks(version, st, dt, us, o=sys.stdout):
         gen_block(name, e, st, dt, us, sizes, min_sizes, max_sizes, version, o)
 
 
-def gen_unpack_factory(ts, o=sys.stdout):
+def gen_unpack_factory(ts, dt, o=sys.stdout):
     n = ts[-1][0] - ts[0][0] + 1
     a = ts[0][0]
     xs = [None] * n
@@ -541,7 +541,9 @@ def gen_unpack_factory(ts, o=sys.stdout):
             print(f'              {x}, # {tid}', file=o)
     print(f']\n', file=o)
 
-    print("tid_st = struct.Struct('<4xH')\n", file=o)
+    bl_size = dt['BodyLen'].get('size')
+
+    print(f"tid_st = struct.Struct('<{bl_size}xH')\n", file=o)
 
     print(f'''def unpack_from(bs, off=0):
     tid = tid_st.unpack_from(bs, off)[0]
@@ -585,7 +587,7 @@ def main():
     gen_enums(dt, ts)
     gen_blocks(version, st, dt, us)
 
-    gen_unpack_factory(ts)
+    gen_unpack_factory(ts, dt)
 
     gen_message_flows(mf)
 
