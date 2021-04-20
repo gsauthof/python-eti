@@ -21,29 +21,27 @@ log = logging.getLogger(__name__)
 
 len_st = struct.Struct('<I')
 
+
+async def read_one(stream):
+    bs = await stream.readexactly(4)
+    n = len_st.unpack(bs)[0]
+    log.info(f'next message size: {n}')
+    rest = await stream.readexactly(n - 4)
+    bs += rest
+    m = eti.unpack_from(bs)
+    m.rstrip()
+    log.info(f'Received: {pformat(m, width=45)}')
+
 async def read_everything(stream):
     try:
         while True:
-            bs = await stream.readexactly(4)
-            n = len_st.unpack(bs)[0]
-            log.info(f'next message size: {n}')
-            rest = await stream.readexactly(n - 4)
-            bs += rest
-            m = eti.unpack_from(bs)
-            m.rstrip()
-            log.info(f'Received: {pformat(m, width=45)}')
+            await read_one(stream)
     except asyncio.IncompleteReadError:
         log.info('Got EOF on read end')
 
 
 async def client(host, port):
-  rstream, wstream = await asyncio.open_connection(host, port)
-
-  reader = asyncio.create_task(read_everything(rstream))
-  # ^ Python 3.7, prior:
-  # reader = asyncio.ensure_future(read_everything(rstream))
-
-  try:
+    rstream, wstream = await asyncio.open_connection(host, port)
     bs = bytearray(1024)
 
     x = eti.LogonRequest()
@@ -58,13 +56,13 @@ async def client(host, port):
     x.PartyIDSessionID = 471142
     x.Password = b'einsfueralles'
     x.RequestHeader.MsgSeqNum = 1
-    x.RequestHeader.SenderSubID = 8150815 # not used for logon
 
     n = x.pack_into(bs)
 
     wstream.write(memoryview(bs)[:n])
     log.info('Sending Logon')
     await wstream.drain()
+    await read_one(rstream)
 
     x = eti.UserLoginRequest()
     x.RequestHeader.MsgSeqNum = 2
@@ -75,8 +73,14 @@ async def client(host, port):
     wstream.write(memoryview(bs)[:n])
     log.info('Sending Login')
     await wstream.drain()
+    await read_one(rstream)
+
+    reader = asyncio.create_task(read_everything(rstream))
+    # ^ Python 3.7, prior:
+    # reader = asyncio.ensure_future(read_everything(rstream))
 
     x = eti.NewOrderSingleShortRequest()
+    x.RequestHeader.SenderSubID = 23 # logged in user name
     x.ExecutingTrader = 1337
     x.EnrichmentRuleID = 1
     x.ApplSeqIndicator = eti.ApplSeqIndicator.NO_RECOVERY_REQUIRED
@@ -87,6 +91,7 @@ async def client(host, port):
     x.ExecInst = eti.ExecInst.Q # non-persistant order
     x.TradingCapacity = eti.TradingCapacity.MARKET_MAKER
     x.PartyIdInvestmentDecisionMakerQualifier = eti.PartyIdInvestmentDecisionMakerQualifier.ALGO
+    x.PartyIdInvestmentDecisionMaker = 0
     x.ExecutingTraderQualifier = eti.ExecutingTraderQualifier.ALGO
 
     x.RequestHeader.MsgSeqNum = 3
@@ -106,7 +111,6 @@ async def client(host, port):
     wc = wstream.close()
     await wstream.wait_closed()
 
-  finally:
     await reader
 
 def main():
