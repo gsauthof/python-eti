@@ -39,6 +39,10 @@ possible, a choice is made by random. Since the server dumps each
 received ETI message to stdout it can also be used as ad-hoc
 protocol dissector when developing/testing an ETI client.
 
+There is also a simple EOBI-Client (`eobi_client.py`) that dumps
+multicast market data packets, including the [DSCP][dscp] field in
+which the EOBI protocol encodes market data related information, as well.
+
 
 ## Protocol Descriptions
 
@@ -146,3 +150,4 @@ The benchmark test case relies on [pytest benchmark][pybench]
 [mv]: https://docs.python.org/3/library/stdtypes.html#memoryview
 [pybench]: https://pytest-benchmark.readthedocs.io
 [ex]: https://georg.so/pub/v9_0.py
+[dscp]: https://en.wikipedia.org/wiki/Differentiated_services
