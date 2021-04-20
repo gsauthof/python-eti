@@ -53,38 +53,38 @@ some links:
 - [ETI
   9.0](https://www.xetra.com/resource/blob/2339516/fb5884fb098c442a4bf7cc8c57912ca7/data/T7_R.9.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip)
   via [Xetra system
-  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release9/Release-9.0-1698786?frag=1698808) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-releases/T7-Releases-2438492?frag=2438494)
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release9/Release-9.0-1698786?frag=1698808) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-9-0)
 - [ETI
   8.1](https://www.eurex.com/resource/blob/1896940/e00bfe40dc3ceed5e99e3bfd9a47af54/data/T7_R.8.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip)
   via [Xetra system
   documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release81/Release-8.1-1698746?frag=1698768)
   or via [Eurex system
-  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release81/Release-8.1-1698368?frag=1698376)
+  documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-8-1)
 - [ETI
   8.0](https://www.eurex.com/resource/blob/1614576/6734877da8532f0e3859c8681c42f5e9/data/T7_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts.zip)
   via [Xetra system
   documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release8/Release-8.0-1449522?frag=1601504)
   or via [Eurex system
-  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8/Release-8.0-1546104?frag=1546112)
+  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8)
 
 EOBI descriptions:
 
 - [EOBI
   9.0](https://www.xetra.com/resource/blob/2221290/00792edace1aaa799a42c67a7638efbf/data/T7_EOBI_XML_Representation_v.9.0.1.zip)
   via [Xetra system
-  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release9/Release-9.0-1698786?frag=1698808) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-releases/T7-Releases-2438492?frag=2438494)
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release9/Release-9.0-1698786?frag=1698808) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-9-0)
 - [ETI
   8.1](https://www.eurex.com/resource/blob/2128192/2209fe1a6f0a78a27baf6411698690b0/data/T7_EOBI_XML_Representation_v.8.1.1.zip)
   via [Xetra system
   documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release81/Release-8.1-1698746?frag=1698768)
   or via [Eurex system
-  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release81/Release-8.1-1698368?frag=1698376)
+  documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-8-1)
 - [ETI
   8.0](https://www.eurex.com/resource/blob/1741872/baeb2d87c8cc518f2ff2738a74356548/data/T7_EOBI_XML_Representation_v.8.0.3.zip)
   via [Xetra system
   documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release8/Release-8.0-1449522?frag=1601504)
   or via [Eurex system
-  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8/Release-8.0-1546104?frag=1546112)
+  documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8)
 
 ## Python Notes
 
