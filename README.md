@@ -123,11 +123,12 @@ On a Skylake i7-6600U Laptop this results in:
 
 ```
 $ pytest bench_eti.py 
------------------------------------------------ benchmark: 1 tests -----------------------------------------------
-Name (time in us)        Min       Max    Mean  StdDev  Median     IQR  Outliers  OPS (Kops/s)  Rounds  Iterations
-------------------------------------------------------------------------------------------------------------------
-test_order            4.2220  169.4589  4.7557  2.3963  4.5809  0.0880  345;3299      210.2732   20337           1
-------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------- benchmark: 2 tests -------------------------------------------------------------------------------------
+Name (time in us)         Min                   Max               Mean             StdDev             Median               IQR            Outliers  OPS (Kops/s)            Rounds  Iterations
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_pack_ioc          4.4320 (1.0)        158.2600 (1.0)       4.9058 (1.0)       2.1368 (1.0)       4.7510 (1.0)      0.1140 (1.0)       403;688      203.8419 (1.0)       18464           1
+test_unpack_ioc       20.6270 (4.65)     1,231.7820 (7.78)     23.7020 (4.83)     10.6706 (4.99)     22.3940 (4.71)     2.5851 (22.67)   1063;1534       42.1906 (0.21)      22066           1
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Legend:
   Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
@@ -135,8 +136,25 @@ Legend:
 ```
 
 That means on that machine the code serializes ~ 200 k IOC orders
-per seconds which is quite ok.
+per seconds (with cpython) which is quite ok.
 
+Using [PyPy][pypy], the numbers are much better (same machine):
+
+```
+$ pypy3 -m pytest bench_eti.py
+----------------------------------------------------------------------------------------------- benchmark: 2 tests -----------------------------------------------------------------------------------------------
+Name (time in ns)            Min                       Max                  Mean                 StdDev                Median                 IQR             Outliers  OPS (Kops/s)            Rounds  Iterations
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+test_pack_ioc           258.9996 (1.0)        334,982.7357 (1.0)        317.4350 (1.0)       1,081.2319 (1.0)        284.9449 (1.0)       25.3693 (1.0)      323;20639    3,150.2509 (1.0)      191351          19
+test_unpack_ioc       3,491.9940 (13.48)    3,202,659.4854 (9.56)     4,626.1754 (14.57)    14,446.8865 (13.36)    3,695.9827 (12.97)    345.4916 (13.62)   1321;18103      216.1613 (0.07)     142817           2
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Legend:
+  Outliers: 1 Standard Deviation from Mean; 1.5 IQR (InterQuartile Range) from 1st Quartile and 3rd Quartile.
+  OPS: Operations Per Second, computed as 1 / Mean
+```
+
+Basically PyPy speeds up the serialization by a factor of 10 and the deserialization by a factor of 5 or so. Note the change in units in the pytest output (from µs to ns).
 
 ## See also
 
@@ -151,3 +169,4 @@ The benchmark test case relies on [pytest benchmark][pybench]
 [pybench]: https://pytest-benchmark.readthedocs.io
 [ex]: https://georg.so/pub/v9_0.py
 [dscp]: https://en.wikipedia.org/wiki/Differentiated_services
+[pypy]: http://pypy.org/
