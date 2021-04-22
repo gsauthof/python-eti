@@ -43,6 +43,11 @@ There is also a simple EOBI-Client (`eobi_client.py`) that dumps
 multicast market data packets, including the [DSCP][dscp] field in
 which the EOBI protocol encodes market data related information, as well.
 
+Another example is `pcapdump.py`, a simple PCAP to ETI/EOBI dumper. It
+pretty-prints EOBI/ETI packets from a PCAP file to stdout in a human-readable
+format. Note that for simplicity it assumes that ETI-TCP-packets just contain
+one complete ETI message which is usually the case, in practice.
+
 
 ## Protocol Descriptions
 
@@ -161,6 +166,10 @@ Basically PyPy speeds up the serialization by a factor of 10 and the deserializa
 The benchmark test case relies on [pytest benchmark][pybench]
 (Fedora package: python3-pytest-benchmark).
 
+The `pcap_dump.py` example uses the [dpkt][dpkt] package for
+parsing PCAP files and skipping over Ethernet/IP/UDP/TCP headers
+(Fedora package: python3-dpkt).
+
 [enum]: https://docs.python.org/3/library/enum.html
 [dc]: https://docs.python.org/3/library/dataclasses.html
 [dcold]: https://pypi.org/project/dataclasses/
@@ -170,3 +179,5 @@ The benchmark test case relies on [pytest benchmark][pybench]
 [ex]: https://georg.so/pub/v9_0.py
 [dscp]: https://en.wikipedia.org/wiki/Differentiated_services
 [pypy]: http://pypy.org/
+[dpkt]: https://github.com/kbandla/dpkt
+
