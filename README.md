@@ -43,11 +43,15 @@ There is also a simple EOBI-Client (`eobi_client.py`) that dumps
 multicast market data packets, including the [DSCP][dscp] field in
 which the EOBI protocol encodes market data related information, as well.
 
-Another example is `pcapdump.py`, a simple PCAP to ETI/EOBI dumper. It
-pretty-prints EOBI/ETI packets from a PCAP file to stdout in a human-readable
-format. Note that for simplicity it assumes that ETI-TCP-packets just contain
-one complete ETI message which is usually the case, in practice.
-
+Another example is `pcapdump.py`, a simple PCAP to ETI/EOBI
+dumper. It pretty-prints EOBI/ETI packets from a PCAP file to
+stdout in a human-readable format. Note that for simplicity it
+assumes that ETI-TCP-packets just contain complete ETI messages
+and start with an ETI message header which is usually the case, in
+practice. Of course, since it's ETI over TCP and TCP is a stream
+oriented protocol it's perfectly fine for a client to span
+ETI-messages over TCP segment boundaries. Adding TCP reassembly
+to the example can be seen as an exercise.
 
 ## Protocol Descriptions
 

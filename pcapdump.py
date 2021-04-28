@@ -9,6 +9,7 @@
 
 import argparse
 import dpkt
+import struct
 import sys
 
 import eobi.v9_0 as eobi
@@ -31,14 +32,14 @@ def dump_eobi(bs, dump_heartbeat):
         if i < n:
             m = eobi.unpack_from(tail[i:])
             m.rstrip()
-            i += m.MessageHeader.BodyLen
-            k += 1
             if (m.MessageHeader.TemplateID != eobi.TemplateID.Heartbeat
                     or dump_heartbeat):
                 print(f'EOBI-Begin: {pformat(ph, width=45)}')
                 print(f'EOBI-Message: {pformat(m, width=45)}')
             else:
                 return
+            i += m.MessageHeader.BodyLen
+            k += 1
         else:
             raise RuntimeError('EOBI PacketHeader without messages')
 
@@ -50,13 +51,34 @@ def dump_eobi(bs, dump_heartbeat):
             print(f'EOBI-Message: {pformat(m, width=45)}')
         print(f'EOBI-End: {k} messages in {n} bytes')
 
+eti_head_st = struct.Struct('<IH')
 
-def dump_eti(bs):
-    m = eti.unpack_from(bs)
-    m.rstrip()
-    print(f'ETI-Message: {pformat(m, width=45)}')
-    if len(bs) != m.MessageHeader.BodyLen:
-        print(f'WARNING: trailing bytes after ETI message: size(payload)={len(bs)} vs. size(msg)={m.MessageHeader.BodyLen}')
+def dump_eti(bsP):
+
+    bs = bsP
+    i = 0
+    xs = []
+
+    while True:
+        m = eti.unpack_from(bs)
+        m.rstrip()
+        t = ''
+        if i > 0:
+            t = f' ({i})'
+        print(f'ETI-Message{t}: {pformat(m, width=45)}')
+        bl, tid = eti_head_st.unpack_from(bs)
+        if len(bs) != bl:
+            print(f'WARNING: trailing bytes after ETI message: size(payload)={len(bs)} vs. size(msg)={bl}')
+            dump_eti(bs[bl:], i+1)
+            bs = bs[bl:]
+            i += 1
+            xs.append(eti.TemplateID(tid).name)
+        else:
+            if i > 0:
+                i += 1
+                xs.append(eti.TemplateID(tid).name)
+                print(f'ETI-packet of {i} messages: {",".join(xs)}')
+            break
 
 
 def parse_args():
@@ -84,12 +106,19 @@ def main():
 
             if isinstance(tp, dpkt.udp.UDP):
                 udp     = tp
-                payload = udp.data
+                payload = memoryview(udp.data)
                 dump_eobi(payload, args.love)
             elif isinstance(tp, dpkt.tcp.TCP):
                 tcp     = tp
-                payload = tcp.data
-                dump_eti(payload)
+                payload = memoryview(tcp.data)
+                try:
+                    dump_eti(payload)
+                except struct.error:
+                    print(f'WARNING: non-ETI @{ts}')
+                except IndexError:
+                    print(f'WARNING: non-ETI unknown template ID @{ts}')
+                except AttributeError:
+                    print(f'WARNING: non-ETI unknown template ID @{ts}')
 
 
 if __name__ == '__main__':
