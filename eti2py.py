@@ -528,6 +528,7 @@ def gen_blocks(version, st, dt, us, o=sys.stdout):
 def gen_unpack_factory(ts, dt, o=sys.stdout):
     n = ts[-1][0] - ts[0][0] + 1
     a = ts[0][0]
+    b = ts[-1][0]
     xs = [None] * n
     for tid, name in ts:
         xs[tid-a] = name
@@ -543,11 +544,20 @@ def gen_unpack_factory(ts, dt, o=sys.stdout):
 
     bl_size = dt['BodyLen'].get('size')
 
-    print(f"tid_st = struct.Struct('<{bl_size}xH')\n", file=o)
+    print(f'''tid_st = struct.Struct('<{bl_size}xH')
+
+class UnpackError(Exception):
+    pass
+''', file=o)
 
     print(f'''def unpack_from(bs, off=0):
     tid = tid_st.unpack_from(bs, off)[0]
-    return tid2class[tid-{a}].create_from(bs, off)
+    if tid < {a} or tid  > {b}:
+        raise UnpackError(f'template ID out of range: {{tid}} not in [{a}..{b}]')
+    c = tid2class[tid-{a}]
+    if c is None:
+        raise UnpackError(f'unknown template ID: {{tid}}')
+    return c.create_from(bs, off)
 ''', file=o)
 
 

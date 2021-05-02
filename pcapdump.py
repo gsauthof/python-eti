@@ -106,18 +106,17 @@ def main():
             if isinstance(tp, dpkt.udp.UDP):
                 udp     = tp
                 payload = memoryview(udp.data)
-                dump_eobi(payload, args.love)
+                try:
+                    dump_eobi(payload, args.love)
+                except (struct.error, eobi.UnpackError) as e:
+                    print(f'WARNING: EOBI packet error @{ts}: {e}')
             elif isinstance(tp, dpkt.tcp.TCP):
                 tcp     = tp
                 payload = memoryview(tcp.data)
                 try:
                     dump_eti(payload)
-                except struct.error:
-                    print(f'WARNING: non-ETI @{ts}')
-                except IndexError:
-                    print(f'WARNING: non-ETI unknown template ID @{ts}')
-                except AttributeError:
-                    print(f'WARNING: non-ETI unknown template ID @{ts}')
+                except (struct.error, eti.UnpackError) as e:
+                    print(f'WARNING: ETI packet error @{ts}: {e}')
 
 
 if __name__ == '__main__':
