@@ -69,7 +69,6 @@ def dump_eti(bsP):
         bl, tid = eti_head_st.unpack_from(bs)
         if len(bs) != bl:
             print(f'WARNING: trailing bytes after ETI message: size(payload)={len(bs)} vs. size(msg)={bl}')
-            dump_eti(bs[bl:], i+1)
             bs = bs[bl:]
             i += 1
             xs.append(eti.TemplateID(tid).name)
