@@ -9,6 +9,7 @@
 
 import argparse
 import dpkt
+from enum import IntEnum
 import struct
 import sys
 
@@ -18,7 +19,23 @@ import eti.v9_0 as eti
 from dressup import pformat
 
 
-def dump_eobi(bs, dump_heartbeat):
+class TLDR(IntEnum):
+    EXEC_SUMMARY          = 0x1c
+    IMPROVED_SPREAD       = 0x2c
+    EXEC_SUMMARY_IMPROVED = 0x3c
+    WIDENED_SPREAD        = 0x4c
+    EXEC_SUMMARY_WIDENED  = 0x5c
+
+tldr2str_map = {
+        TLDR.EXEC_SUMMARY          : 'EXEC_SUMMARY',
+        TLDR.IMPROVED_SPREAD       : 'IMPROVED_SPREAD',
+        TLDR.EXEC_SUMMARY_IMPROVED : 'EXEC_SUMMARY_IMPROVED',
+        TLDR.WIDENED_SPREAD        : 'WIDENED_SPREAD',
+        TLDR.EXEC_SUMMARY_WIDENED  : 'EXEC_SUMMARY_WIDENED',
+}
+
+
+def dump_eobi(bs, tos, dump_heartbeat):
         n = len(bs)
 
         ph = eobi.unpack_from(bs)
@@ -49,6 +66,14 @@ def dump_eobi(bs, dump_heartbeat):
             i += m.MessageHeader.BodyLen
             k += 1
             print(f'EOBI-Message: {pformat(m, width=45)}')
+        if tos:
+            s = tldr2str_map.get(tos)
+            if s:
+                print('tl;dr DSCP flag: ' + s)
+            else:
+                print(f'WARNING: unknown DSCP flag: {tos:x}')
+        else:
+           print('tl;dr DSCP flag: NONE')
         print(f'EOBI-End: {k} messages in {n} bytes')
 
 eti_head_st = struct.Struct('<IH')
@@ -107,7 +132,7 @@ def main():
                 udp     = tp
                 payload = memoryview(udp.data)
                 try:
-                    dump_eobi(payload, args.love)
+                    dump_eobi(payload, ip.tos, args.love)
                 except (struct.error, eobi.UnpackError) as e:
                     print(f'WARNING: EOBI packet error @{ts}: {e}')
             elif isinstance(tp, dpkt.tcp.TCP):
