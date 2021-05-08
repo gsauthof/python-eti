@@ -60,6 +60,10 @@ web sites. Since they are sometimes kind of hard to find I include
 some links:
 
 - [ETI
+  9.1](https://www.eurex.com/resource/blob/2609690/62b03a26ce2075635b329e6c688d69b9/data/T7_R.9.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip)
+  via [Xetra system
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release91/Release-9.1-2425830?frag=2425852) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-9-1)
+- [ETI
   9.0](https://www.xetra.com/resource/blob/2339516/fb5884fb098c442a4bf7cc8c57912ca7/data/T7_R.9.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip)
   via [Xetra system
   documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release9/Release-9.0-1698786?frag=1698808) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-9-0)
@@ -78,6 +82,10 @@ some links:
 
 EOBI descriptions:
 
+- [EOBI
+  9.1](https://www.eurex.com/resource/blob/2612882/6e784f79cac7928d39d7dbcf831cc14e/data/T7_EOBI_XML_Representation_v.9.1.1.zip)
+  via [Xetra system
+  documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release91/Release-9.1-2425830?frag=2425850) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-9-1)
 - [EOBI
   9.0](https://www.xetra.com/resource/blob/2221290/00792edace1aaa799a42c67a7638efbf/data/T7_EOBI_XML_Representation_v.9.0.1.zip)
   via [Xetra system

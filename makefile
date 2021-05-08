@@ -1,20 +1,25 @@
 
 
 
+eti_9_1 = T7_ETI_9.1.zip
 eti_9_0 = T7_ETI_9.0.zip
 eti_8_1 = T7_ETI_8_1.zip
 eti_8_0 = T7_ETI_8_0.zip
 
-eti_versions = 9_0 8_1 8_0
+eti_versions = 9_1 9_0 8_1 8_0
 
+eobi_9_1 = T7_EOBI_9.1.zip
 eobi_9_0 = T7_EOBI_9.0.zip
 eobi_8_1 = T7_EOBI_8_1.zip
 eobi_8_0 = T7_EOBI_8_0.zip
 
-eobi_versions = 9_0 8_1 8_0
+eobi_versions = 9_1 9_0 8_1 8_0
 
 all: all-eti
 
+work/$(eti_9_1):
+	mkdir -p work
+	curl -o $@ https://www.eurex.com/resource/blob/2609690/62b03a26ce2075635b329e6c688d69b9/data/T7_R.9.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip
 
 work/$(eti_9_0):
 	mkdir -p work
@@ -28,6 +33,10 @@ work/$(eti_8_0):
 	mkdir -p work
 	curl -o $@ https://www.eurex.com/resource/blob/1614576/6734877da8532f0e3859c8681c42f5e9/data/T7_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts.zip
 
+
+work/$(eobi_9_1):
+	mkdir -p work
+	curl -o $@ https://www.eurex.com/resource/blob/2612882/6e784f79cac7928d39d7dbcf831cc14e/data/T7_EOBI_XML_Representation_v.9.1.1.zip
 
 work/$(eobi_9_0):
 	mkdir -p work
