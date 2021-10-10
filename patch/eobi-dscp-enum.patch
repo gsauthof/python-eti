@@ -1,0 +1,17 @@
+--- a/temp/T7_EOBI_9_1/eobi.xml	2021-05-19 12:50:26.584961471 +0200
++++ b/temp/T7_EOBI_9.1/eobi.xml	2021-10-10 15:22:08.261076499 +0200
+@@ -1374,7 +1374,13 @@
+       <ValidValue name="CrossAnnouncement" value="1" description=""/>
+       <ValidValue name="LiquidityImprovementCross" value="2" description=""/>
+     </DataType>
+-    <DataType name="DSCP" type="int" rootType="int" numericID="25204" package="eobi" size="1" description="" minValue="0" maxValue="254" noValue="0xFF"/>
++    <DataType name="DSCP" type="int" rootType="int" numericID="25204" package="eobi" size="1" description="" minValue="0" maxValue="254" noValue="0xFF">
++      <ValidValue name="ExecSummary" value="7" description=""/>
++      <ValidValue name="ImprovedSpread" value="11" description=""/>
++      <ValidValue name="ExecSummaryImprovedSpread" value="15" description=""/>
++      <ValidValue name="WidenedSpread" value="19" description=""/>
++      <ValidValue name="ExecSummaryWidenedSpread" value="23" description=""/>
++    </DataType>
+     <DataType name="DisplayQty" type="QuantityType" rootType="floatDecimal" numericID="1138" package="eobi" size="8" description="" minValue="-922337203685477.5807" maxValue="922337203685477.5807" precision="4" noValue="0x8000000000000000"/>
+     <DataType name="ExecID" type="UTCTimestamp" rootType="int" numericID="17" package="eobi" size="8" description="" minValue="0" maxValue="18446744073709551614" noValue="0xFFFFFFFFFFFFFFFF"/>
+     <DataType name="FastMarketIndicator" type="int" rootType="int" numericID="2447" package="eobi" size="1" description="" minValue="0" maxValue="1" noValue="0xFF">
