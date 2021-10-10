@@ -652,11 +652,14 @@ proto_reg_handoff_{proto}(void)
     dissector_handle_t {proto}_handle = create_dissector_handle(dissect_{proto},
             proto_{proto});
 
-    // cf. N7 Network Access Guide
+    // cf. N7 Network Access Guide, e.g.
+    // https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-0/Release-10.0-2692700?frag=2692724
+    // https://www.xetra.com/resource/blob/2762078/388b727972b5122945eedf0e63c36920/data/N7-Network-Access-Guide-v2.0.59.pdf
+
 ''', file=o)
     if proto.startswith('eti'):
         print(f'''    // NB: can only be called once for a port/handle pair ...
-    //dissector_add_uint_with_preference("tcp.port", 19006 /* LF PROD */, eti_handle);
+    // dissector_add_uint_with_preference("tcp.port", 19006 /* LF PROD */, eti_handle);
 
     dissector_add_uint("tcp.port", 19006 /* LF PROD */, {proto}_handle);
     dissector_add_uint("tcp.port", 19043 /* PS PROD */, {proto}_handle);

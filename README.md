@@ -114,6 +114,28 @@ EOBI descriptions:
   or via [Eurex system
   documentation](https://www.eurex.com/ex-en/support/initiatives/archive/release8)
 
+## Related Documentation
+
+The previous section contains links into the Euex/Xetra system
+documentation which includes manuals and reference manuals on the
+various protocols and services.
+
+Besides the protocols there is also the N7 Network Access Guide
+which lists the various ports and IP addresses in use for these
+protocols:
+
+- [Xetra Release 10 Network Access Section](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-0/Release-10.0-2692700?frag=2692724)
+- Direct link: [N7 Network Access-Guide v2.0.59 Release 10 (Xetra)](https://www.xetra.com/resource/blob/2762078/388b727972b5122945eedf0e63c36920/data/N7-Network-Access-Guide-v2.0.59.pdf)
+- Direct link: [N7 Network Access-Guide v2.0.59 Release 10 (Eurex)](https://www.eurex.com/resource/blob/2630862/388b727972b5122945eedf0e63c36920/data/N7-Network-Access-Guide-v2.0.59.pdf)
+
+The functional reference gives some background on how the
+exchange system (the order matching etc.) is supposed to work:
+
+- [Xetra Release 10 Overview and Functionality Section](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-0/Release-10.0-2692700?frag=2692698)
+- Direct link: [T7 Functional Reference v10.0.3 Release 10 (Xetra)](https://www.xetra.com/resource/blob/2760634/9b17c870d7243f8ed60f21bfe79002fe/data/T7_Release_10.0_-_Functional_Reference_v.10.0.3.pdf)
+- Direct link: [T7 Functional Reference v10.0.3 Release 10 (Eurex)](https://www.eurex.com/resource/blob/2762324/e2a7cff6afa80dfb32a9a20bf53e4fdb/data/T7_Release_10.0_-_Function_And_Interface_Overview_v.10.0.3.pdf)
+
+
 ## Python Notes
 
 The main noteworthy modern Python features the generated code uses are [Python
