@@ -296,8 +296,8 @@ elements.<br/>
 A real limitation is that timestamp fields such as `ExecID` are displayed as is, i.e. the
 value isn't converted into a human readable date-time string.<br/>
 A serious issue is how the Lua dissectors display
-fixed-decimals: the Lua code uses floating point arithmetic to
-convert them and the resulting floating point value is
+fixed-point decimals: the Lua code uses floating-point arithmetic to
+convert them and the resulting floating-point value is
 displayed. Thus, the displayed value is just an approximation
 of the real value.<br/>
 From the repository's description and README it isn't clear
