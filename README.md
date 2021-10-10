@@ -57,6 +57,9 @@ oriented protocol it's perfectly fine for a client to span
 ETI-messages over TCP segment boundaries. Adding TCP reassembly
 to the example can be seen as an exercise.
 
+The `pcapgen.py` script shows how to quickly generate/fake some
+ETI/EOBI PCAP files from scratch for testing purposes.
+
 ## Protocol Descriptions
 
 Deutsche Börse publishes the ETI protocol descriptions on their
