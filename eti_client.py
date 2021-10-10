@@ -12,7 +12,7 @@ import logging
 import struct
 import sys
 
-import eti.v9_0 as eti
+import eti.v9_1 as eti
 
 from dressup import pformat
 

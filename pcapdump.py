@@ -13,8 +13,8 @@ from enum import IntEnum
 import struct
 import sys
 
-import eobi.v9_0 as eobi
-import eti.v9_0 as eti
+import eobi.v9_1 as eobi
+import eti.v9_1 as eti
 
 from dressup import pformat
 

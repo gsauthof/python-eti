@@ -15,7 +15,7 @@ import socket
 import struct
 import sys
 
-import eobi.v9_0 as eobi
+import eobi.v9_1 as eobi
 
 from dressup import pformat
 
