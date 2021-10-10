@@ -66,6 +66,8 @@ Deutsche Börse publishes the ETI protocol descriptions on their
 web sites. Since they are sometimes kind of hard to find I include
 some links:
 
+- [ETI 10](https://www.eurex.com/resource/blob/2762272/9bcab8822ab884633cc0bbbeeec8b69b/data/T7_R.10.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip)
+  via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-0/Release-10.0-2692700?frag=2692722) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-10-0)
 - [ETI
   9.1](https://www.eurex.com/resource/blob/2609690/62b03a26ce2075635b329e6c688d69b9/data/T7_R.9.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip)
   via [Xetra system
@@ -89,6 +91,8 @@ some links:
 
 EOBI descriptions:
 
+- [EOBI 10](https://www.eurex.com/resource/blob/2762306/01c8058a2fbabd3a13891e7e53e3886b/data/T7_EOBI_XML_Representation_v.10.0.0-1-.zip)
+  via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-0/Release-10.0-2692700?frag=2692720) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-10-0)
 - [EOBI
   9.1](https://www.eurex.com/resource/blob/2612882/6e784f79cac7928d39d7dbcf831cc14e/data/T7_EOBI_XML_Representation_v.9.1.1.zip)
   via [Xetra system

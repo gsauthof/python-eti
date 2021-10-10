@@ -1,17 +1,19 @@
 
+url_eti_10_0 = https://www.eurex.com/resource/blob/2762272/9bcab8822ab884633cc0bbbeeec8b69b/data/T7_R.10.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip
 url_eti_9_1 = https://www.eurex.com/resource/blob/2609690/62b03a26ce2075635b329e6c688d69b9/data/T7_R.9.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip
 url_eti_9_0 = https://www.xetra.com/resource/blob/2339516/fb5884fb098c442a4bf7cc8c57912ca7/data/T7_R.9.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip
 url_eti_8_1 = https://www.eurex.com/resource/blob/1896940/e00bfe40dc3ceed5e99e3bfd9a47af54/data/T7_R.8.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip
 url_eti_8_0 = https://www.eurex.com/resource/blob/1614576/6734877da8532f0e3859c8681c42f5e9/data/T7_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts.zip
 
+url_eobi_10_0 = https://www.eurex.com/resource/blob/2762306/01c8058a2fbabd3a13891e7e53e3886b/data/T7_EOBI_XML_Representation_v.10.0.0-1-.zip
 url_eobi_9_1 = https://www.eurex.com/resource/blob/2612882/6e784f79cac7928d39d7dbcf831cc14e/data/T7_EOBI_XML_Representation_v.9.1.1.zip
 url_eobi_9_0 = https://www.xetra.com/resource/blob/2221290/00792edace1aaa799a42c67a7638efbf/data/T7_EOBI_XML_Representation_v.9.0.1.zip
 url_eobi_8_1 = https://www.eurex.com/resource/blob/2128192/2209fe1a6f0a78a27baf6411698690b0/data/T7_EOBI_XML_Representation_v.8.1.1.zip
 url_eobi_8_0 = https://www.eurex.com/resource/blob/1741872/baeb2d87c8cc518f2ff2738a74356548/data/T7_EOBI_XML_Representation_v.8.0.3.zip
 
-eti_versions = 9_1 9_0 8_1 8_0
+eti_versions = 10_0 9_1 9_0 8_1 8_0
 
-eobi_versions = 9_1 9_0 8_1 8_0
+eobi_versions = 10_0 9_1 9_0 8_1 8_0
 
 
 all: all-eti
