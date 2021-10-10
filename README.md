@@ -1,12 +1,16 @@
 This repository contains a code-generator that turns a Deutsche
 Börse ETI (Enhanced Trading Interface) protocol description into
 Python bindings.
+It supports EOBI (market data) protocol descriptions, as
+well.
 
-It's a private research project for investigating how binary
+There is also a code generator for creating Wireshark protocol
+dissector from these protocol descriptions.
+
+This is a private research project for investigating how binary
 serialisation/deserialization code can profit from modern Python
-features.
+features and other experiments.
 
-It also support EOBI (market data) protocol descriptions.
 
 2021, Georg Sauthoff <mail@gms.tf>
 
@@ -230,6 +234,47 @@ And the EOBI Packet-Header:
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ```
 
+
+## Wireshark Protocol Dissectors
+
+The tool `./eti2wireshark.py` generates Wireshark protocol
+dissectors from the ETI/EOBI protocol descriptions.
+
+Example:
+
+    ./eti2wireshark.py --proto eobi --desc 'Enhanced Order Book Interface' temp/T7_EOBI_9.1.zip/eobi-mod.xml -o packet-eobi.c
+    ./eti2wireshark.py temp/T7_ETI_9.1.zip/eti_Derivatives.xml -o packet-eti.c
+
+The generated code is implemented around a tight state machine to
+avoid [code bloat](https://en.wikipedia.org/wiki/Code_bloat).
+
+Protocol fields are pretty-printed in the obvious ways, e.g.
+timestamps in human readable format, fixed point decimals with
+the point inserted at the type specific place, enumeration
+mappings provided etc.
+
+**Related work:**
+
+- [Open-Markets-Initiative/wireshark-lua](https://github.com/Open-Markets-Initiative/wireshark-lua) - A collection of Lua based model-generated Wireshark dissectors for various trading/market data protocols. The ETI/EOBI protocols are listed there as untested. I haven't tested these dissectors - however, the fact that they use another layer of general indirection (the Lua interpreter) surely doesn't help with dissecting speed.<br/>
+The generated ETI 9.1 Lua dissector file contains over 32
+thousand lines whereas the `eti2wireshark.py` generated ETI 9.1
+dissector C-code just spans about 7.5 thousand lines - where most
+of the lines are lookup tables that are placed into the read-only
+data segment.<br/>
+FWIW, in contrast to the eti2wireshark dissectors, the Lua dissectors
+pretty-print field names with spaces between the camel-cased
+elements.<br/>
+A real limitation is that timestamp fields such as `ExecID` are displayed as is, i.e. the
+value isn't converted into a human readable date-time string.<br/>
+A serious issue is how the Lua dissectors display
+fixed-decimals: the Lua code uses floating point arithmetic to
+convert them and the resulting floating point value is
+displayed. Thus, the displayed value is just an approximation
+of the real value.<br/>
+From the repository's description and README it isn't clear
+where the Lua dissector generators are available and whether they
+are avaiable under an Open Source license.
+- [dharmangbhavsar/eti_dissector (removed)](https://web.archive.org/web/20201228095555/https://github.com/dharmangbhavsar/eti_dissector) - 'A Eurex ETI Wireshark Dissector for Geneva Trading' was available until mid 2021 or so but that repository was removed later that year. From the archived page its unclear whether that dissector was released under an open source license. The last commit was from December, 2018 and it looks like it supported ETI version 6.1. Since the repository listing includes Deutsche Börse's published C header file (with structs for all the ETI PDUs) and no XML protocol description it looks like that dissectors wasn't code generated.
 
 ## See also
 
