@@ -456,10 +456,10 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                     old_fidx = fidx;
                     fidx = fields[fidx].field_handle_idx;
                     DISSECTOR_ASSERT(top == 1);
+                    ++top;
                 }} else {{
-                    old_fidx = fidx;
+                    ++fidx;
                 }}
-                ++top;
                 break;
             case ETI_PADDING:
                 off += fields[fidx].size;

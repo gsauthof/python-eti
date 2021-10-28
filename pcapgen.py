@@ -72,7 +72,7 @@ def mk_summary(bs):
     ph.MarketSegmentID = 1337 # product id
     ph.PartitionID = 7
     ph.CompletionIndicator = eobi.CompletionIndicator.COMPLETE
-    ph.DSCP = 0x3c >> 2 # exclude ECN field
+    ph.DSCP = 0x3c # exclude ECN field
     ph.TransactTime = 1633864284123456789
     n = ph.pack_into(bs)
     m = eobi.ExecutionSummary()
@@ -83,6 +83,25 @@ def mk_summary(bs):
     m.LastPx = 9902422
     n = m.pack_into(bs, n)
     return memoryview(bs[:n])
+
+def mk_empty_inssum(bs):
+    ph = eobi.PacketHeader()
+    ph.ApplSeqNum = 4713
+    ph.MarketSegmentID = 1337 # product id
+    ph.PartitionID = 7
+    ph.CompletionIndicator = eobi.CompletionIndicator.COMPLETE
+    ph.DSCP = 0x4c
+    ph.TransactTime = 1633864284123480230
+    n = ph.pack_into(bs)
+    m = eobi.InstrumentSummary()
+    m.SecurityID = 42 # instrument id
+    m.SoldOutIndicator = eobi.SoldOutIndicator.SOLDOUT
+    assert m.NoMDEntries == 0
+    n = m.pack_into(bs, n)
+    m.NoMDEntries = 0xff # NO_VALUE
+    m.MarketCondition = eobi.MarketCondition.STRESSED
+    n = m.pack_into(bs, n)
+    return memoryview(bs[:n])
     
 def dump(u):
     print(f'000000 {u.hex(sep=" ", bytes_per_sep=1)}\n')
@@ -91,7 +110,7 @@ def gen_eti():
     buf = bytearray(1024)
     u = mk_reject('Invalid login credentials!', 23, buf)
     dump(u)
-    u = mk_summary(buf)
+    u = mk_exec_report(buf)
     dump(u)
 
 def gen_eobi():
@@ -100,9 +119,11 @@ def gen_eobi():
     dump(u)
     u = mk_summary(buf)
     dump(u)
+    u = mk_empty_inssum(buf)
+    dump(u)
 
 def main():
-    gen_eti()
+    #gen_eti()
     gen_eobi()
 
 if __name__ == '__main__':
