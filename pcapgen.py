@@ -15,6 +15,8 @@
 # SPDX-FileCopyrightText: © 2021 Georg Sauthoff <mail@gms.tf>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import argparse
+
 import eti.v9_1 as eti
 import eobi.v9_1 as eobi
 import sys
@@ -50,6 +52,14 @@ def mk_exec_report(bs):
     m.InstrmntLegExecGrp.append(c)
     m.InstrmntLegExecGrp.append(eti.InstrmntLegExecGrpComp())
     m.update_length()
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
+
+
+def mk_mod_order(bs, freetext1):
+    m = eti.ModifyOrderSingleRequest()
+    m.FreeText1 = freetext1.encode()
+    m.FreeText3 = b'\0lol'
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
@@ -112,6 +122,8 @@ def gen_eti():
     dump(u)
     u = mk_exec_report(buf)
     dump(u)
+    u = mk_mod_order(buf, 'test stray chars')
+    dump(u)
 
 def gen_eobi():
     buf = bytearray(1024)
@@ -122,9 +134,18 @@ def gen_eobi():
     u = mk_empty_inssum(buf)
     dump(u)
 
+def parse_args():
+    p = argparse.ArgumentParser(description='Generate dummy ETI/EOBI PCAP files')
+    p.add_argument('--eobi', action='store_true', help='generate EOBI PCAP instead of ETI')
+    args = p.parse_args()
+    return args
+
 def main():
-    #gen_eti()
-    gen_eobi()
+    args = parse_args()
+    if args.eobi:
+        gen_eobi()
+    else:
+        gen_eti()
 
 if __name__ == '__main__':
     sys.exit(main())

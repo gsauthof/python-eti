@@ -194,7 +194,12 @@ def type2ft(t):
         size = int(t.get('size')) * 8
         return f'FT_{u}INT{size}'
     if is_fixed_string(t) or is_var_string(t):
-        return 'FT_STRING'
+        # NB: technically, ETI fixed-strings are blank-padded,
+        # unless they are marked NO_VALUE, in that case
+        # the first byte is zero, followed by unspecified content.
+        # Also, some fixed-strings are zero-terminated, where again
+        # the bytes following the terminator are unspecified.
+        return 'FT_STRINGZTRUNC'
     raise RuntimeError('unexpected type')
 
 def type2enc(t):
@@ -466,8 +471,18 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 ++fidx;
                 break;
             case ETI_CHAR:
-            case ETI_STRING:
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_ASCII);
+                off += fields[fidx].size;
+                ++fidx;
+                break;
+            case ETI_STRING:
+                {{
+                    guint8 c = tvb_get_guint8(tvb, off);
+                    if (c)
+                        proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_ASCII);
+                    else
+                        proto_tree_add_string(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, "NO_VALUE ('0x00...')");
+                }}
                 off += fields[fidx].size;
                 ++fidx;
                 break;
