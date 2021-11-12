@@ -496,70 +496,134 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 DISSECTOR_ASSERT(fields[fidx].counter_off < sizeof counter / sizeof counter[0]);
                 DISSECTOR_ASSERT(fields[fidx].size <= 2);
                 {{
-                    gboolean no_value = 0;
-                    guint32 x = 0;
-                    proto_item *e = proto_tree_add_item_ret_uint(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN, &x);
                     switch (fields[fidx].size) {{
-                        case 1: no_value = x == UINT8_MAX; break;
-                        case 2: no_value = x == UINT16_MAX; break;
-                    }}
-                    if (no_value) {{
-                        counter[fields[fidx].counter_off] = 0;
-                        proto_item_append_text(e, " (NO_VALUE)");
-                    }} else {{
-                        if (x > fields[fidx].ett_idx) {{
-                            counter[fields[fidx].counter_off] = fields[fidx].ett_idx;
-                            expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu32 " > %" PRIu16, x, fields[fidx].ett_idx);
-                        }} else {{
-                            counter[fields[fidx].counter_off] = x;
-                        }}
+                        case 1:
+                            {{
+                                guint8 x = tvb_get_guint8(tvb, off);
+                                if (x == UINT8_MAX) {{
+                                    proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xff)");
+                                    counter[fields[fidx].counter_off] = 0;
+                                }} else {{
+                                    proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu8, x);
+                                    if (x > fields[fidx].ett_idx) {{
+                                        counter[fields[fidx].counter_off] = fields[fidx].ett_idx;
+                                        expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu32 " > %" PRIu16, x, fields[fidx].ett_idx);
+                                    }} else {{
+                                        counter[fields[fidx].counter_off] = x;
+                                    }}
+                                }}
+                            }}
+                            break;
+                        case 2:
+                            {{
+                                guint16 x = tvb_get_letohs(tvb, off);
+                                if (x == UINT16_MAX) {{
+                                    proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffff)");
+                                    counter[fields[fidx].counter_off] = 0;
+                                }} else {{
+                                    proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu16, x);
+                                    if (x > fields[fidx].ett_idx) {{
+                                        counter[fields[fidx].counter_off] = fields[fidx].ett_idx;
+                                        expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu32 " > %" PRIu16, x, fields[fidx].ett_idx);
+                                    }} else {{
+                                        counter[fields[fidx].counter_off] = x;
+                                    }}
+                                }}
+                            }}
+                            break;
                     }}
                 }}
                 off += fields[fidx].size;
                 ++fidx;
                 break;
             case ETI_UINT:
-                {{
-                    gboolean no_value = 0;
-                    proto_item *e = NULL;
-                    if (fields[fidx].size <= 4) {{
-                        guint32 x = 0;
-                        e = proto_tree_add_item_ret_uint(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN, &x);
-                        switch (fields[fidx].size) {{
-                            case 1: no_value = x == UINT8_MAX; break;
-                            case 2: no_value = x == UINT16_MAX; break;
-                            case 4: no_value = x == UINT32_MAX; break;
+                switch (fields[fidx].size) {{
+                    case 1:
+                        {{
+                            guint8 x = tvb_get_guint8(tvb, off);
+                            if (x == UINT8_MAX) {{
+                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xff)");
+                            }} else {{
+                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu8, x);
+                            }}
                         }}
-                    }} else {{
-                        guint64 x = 0;
-                        e = proto_tree_add_item_ret_uint64(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN, &x);
-                        no_value = x == UINT64_MAX;
-                    }}
-                    if (no_value)
-                        proto_item_append_text(e, " (NO_VALUE)");
+                        break;
+                    case 2:
+                        {{
+                            guint16 x = tvb_get_letohs(tvb, off);
+                            if (x == UINT16_MAX) {{
+                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffff)");
+                            }} else {{
+                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu16, x);
+                            }}
+                        }}
+                        break;
+                    case 4:
+                        {{
+                            guint32 x = tvb_get_letohl(tvb, off);
+                            if (x == UINT32_MAX) {{
+                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffff)");
+                            }} else {{
+                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu32, x);
+                            }}
+                        }}
+                        break;
+                    case 8:
+                        {{
+                            guint64 x = tvb_get_letoh64(tvb, off);
+                            if (x == UINT64_MAX) {{
+                                proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffffffffffff)");
+                            }} else {{
+                                proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu64, x);
+                            }}
+                        }}
+                        break;
                 }}
                 off += fields[fidx].size;
                 ++fidx;
                 break;
             case ETI_INT:
-                {{
-                    gboolean no_value = 0;
-                    proto_item *e = NULL;
-                    if (fields[fidx].size <= 4) {{
-                        gint32 x = 0;
-                        e = proto_tree_add_item_ret_int(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN, &x);
-                        switch (fields[fidx].size) {{
-                            case 1: no_value = x == INT8_MIN; break;
-                            case 2: no_value = x == INT16_MIN; break;
-                            case 4: no_value = x == INT32_MIN; break;
+                switch (fields[fidx].size) {{
+                    case 1:
+                        {{
+                            gint8 x = tvb_get_gint8(tvb, off);
+                            if (x == INT8_MIN) {{
+                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80)");
+                            }} else {{
+                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi8, x);
+                            }}
                         }}
-                    }} else {{
-                        gint64 x = 0;
-                        e = proto_tree_add_item_ret_int64(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN, &x);
-                        no_value = x == INT64_MIN;
-                    }}
-                    if (no_value)
-                        proto_item_append_text(e, " (NO_VALUE)");
+                        break;
+                    case 2:
+                        {{
+                            gint16 x = tvb_get_letohis(tvb, off);
+                            if (x == INT16_MIN) {{
+                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000)");
+                            }} else {{
+                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi16, x);
+                            }}
+                        }}
+                        break;
+                    case 4:
+                        {{
+                            gint32 x = tvb_get_letohil(tvb, off);
+                            if (x == INT32_MIN) {{
+                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80000000)");
+                            }} else {{
+                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi32, x);
+                            }}
+                        }}
+                        break;
+                    case 8:
+                        {{
+                            gint64 x = tvb_get_letohi64(tvb, off);
+                            if (x == INT64_MIN) {{
+                                proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
+                            }} else {{
+                                proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi64, x);
+                            }}
+                        }}
+                        break;
                 }}
                 off += fields[fidx].size;
                 ++fidx;
@@ -577,7 +641,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 {{
                     gint64 x = tvb_get_letohi64(tvb, off);
                     if (x == INT64_MIN) {{
-                        proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi64 " (NO_VALUE)", x);
+                        proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
                     }} else {{
                         unsigned slack = fields[fidx].counter_off + 1;
                         if (x < 0)
