@@ -18,6 +18,7 @@
 import argparse
 
 import eti.v9_1 as eti
+import xti.v9_1 as xti
 import eobi.v9_1 as eobi
 import sys
 
@@ -55,6 +56,15 @@ def mk_exec_report(bs):
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
+def mk_xti_mod_order(bs):
+    # i.e. malformed when parsing as Derivatives-ETI
+    m = xti.ModifyOrderSingleRequest()
+    m.FreeText1 = b'cash rules'
+    m.FreeText2 = b'everything'
+    m.FreeText4 = b'around'
+    m.FIXClOrdID = b'me'
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
 
 def mk_mod_order(bs, freetext1):
     m = eti.ModifyOrderSingleRequest()
@@ -121,6 +131,8 @@ def gen_eti():
     u = mk_reject('Invalid login credentials!', 23, buf)
     dump(u)
     u = mk_exec_report(buf)
+    dump(u)
+    u = mk_xti_mod_order(buf)
     dump(u)
     u = mk_mod_order(buf, 'test stray chars')
     dump(u)

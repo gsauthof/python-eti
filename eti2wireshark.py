@@ -43,7 +43,7 @@ def get_templates(st):
 
 
 def gen_header(proto, desc, o=sys.stdout):
-    if proto.startswith('eti'):
+    if proto.startswith('eti') or proto.startswith('xti'):
         ph = '#include "packet-tcp.h"    // tcp_dissect_pdus()'
     else:
         ph = '#include "packet-udp.h"    // udp_dissect_pdus()'
@@ -388,7 +388,7 @@ struct ETI_Field {
 ''', file=o)
 
 def gen_dissect_fn(st, dt, ts, sh, proto, o=sys.stdout):
-    if proto.startswith('eti'):
+    if proto.startswith('eti') or proto.startswith('xti'):
         bl_fn = 'tvb_get_letohl'
         template_off = 4
     else:
@@ -744,6 +744,12 @@ proto_reg_handoff_{proto}(void)
     dissector_add_uint("tcp.port", 19043 /* PS PROD */, {proto}_handle);
     dissector_add_uint("tcp.port", 19506 /* LF SIMU */, {proto}_handle);
     dissector_add_uint("tcp.port", 19543 /* PS SIMU */, {proto}_handle);''', file=o)
+    elif proto.startswith('xti'):
+        print(f'''    // NB: unfortunately, Cash-ETI shares the same ports as Derivatives-ETI ...
+    //     We thus can't really add a well-know port for XTI.
+    //     Use Wireshark's `Decode As...` or tshark's `-d tcp.port=19043,xti` feature
+    //     to switch from ETI to XTI dissection.
+    dissector_add_uint_with_preference("tcp.port", 19042 /* dummy */, {proto}_handle);''', file=o)
     else:
         print(f'''    static const int ports[] = {{
         59000, // Snapshot    EUREX US-allowed    PROD
