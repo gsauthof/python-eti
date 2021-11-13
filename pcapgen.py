@@ -73,6 +73,21 @@ def mk_mod_order(bs, freetext1):
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
+def mk_logon(bs):
+    m = eti.LogonRequest()
+    m.PartyIDSessionID = 2323
+    m.Password = b'geheim23'
+    m.ApplicationSystemName = b'skynet'
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
+
+def mk_login(bs):
+    m = eti.UserLoginRequest()
+    m.Username = 1337
+    m.Password = b'besttrader'
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
+
 def mk_heartbeat(bs):
     ph = eobi.PacketHeader()
     ph.ApplSeqNum = 4712
@@ -128,10 +143,19 @@ def dump(u):
 
 def gen_eti():
     buf = bytearray(1024)
+    tail = bytearray(1024)
     u = mk_reject('Invalid login credentials!', 23, buf)
     dump(u)
     u = mk_exec_report(buf)
     dump(u)
+
+    # test tcp packet reassembly
+    v = mk_logon(buf)
+    w = mk_login(tail)
+    dump(v[:123])
+    dump(bytearray(v[123:]) + w[:23])
+    dump(w[23:])
+
     u = mk_xti_mod_order(buf)
     dump(u)
     u = mk_mod_order(buf, 'test stray chars')
