@@ -556,7 +556,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                                     proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu8, x);
                                     if (x > fields[fidx].ett_idx) {{
                                         counter[fields[fidx].counter_off] = fields[fidx].ett_idx;
-                                        expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu32 " > %" PRIu16, x, fields[fidx].ett_idx);
+                                        expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu8 " > %" PRIu16, x, fields[fidx].ett_idx);
                                     }} else {{
                                         counter[fields[fidx].counter_off] = x;
                                     }}
@@ -573,7 +573,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                                     proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu16, x);
                                     if (x > fields[fidx].ett_idx) {{
                                         counter[fields[fidx].counter_off] = fields[fidx].ett_idx;
-                                        expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu32 " > %" PRIu16, x, fields[fidx].ett_idx);
+                                        expert_add_info_format(pinfo, e, &ei_{proto}_counter_overflow, "Counter overflow: %" PRIu16 " > %" PRIu16, x, fields[fidx].ett_idx);
                                     }} else {{
                                         counter[fields[fidx].counter_off] = x;
                                     }}
