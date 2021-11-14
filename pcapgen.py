@@ -96,6 +96,13 @@ def mk_invalid_template(bs, tid):
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
+def mk_invalid_enum(bs):
+    m = eti.DeleteAllOrderRequest()
+    m.SecurityID = 815
+    m.Side = 23 # NB: Invalid enumeration value!
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
+
 def mk_heartbeat(bs):
     ph = eobi.PacketHeader()
     ph.ApplSeqNum = 4712
@@ -172,6 +179,9 @@ def gen_eti():
     u = mk_invalid_template(buf, 23)
     dump(u)
     u = mk_invalid_template(buf, 10105)
+    dump(u)
+
+    u = mk_invalid_enum(buf)
     dump(u)
 
 def gen_eobi():
