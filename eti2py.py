@@ -11,6 +11,7 @@ import re
 import sys
 import xml.etree.ElementTree as ET
 
+from etimodel import get_min_sizes, get_max_sizes
 
 def gen_version(d, o=sys.stdout):
     r = d.getroot()
@@ -97,37 +98,6 @@ def get_sizes(st, dt):
                 s = 0
                 break
             s += x
-        h[name] = s
-    return h
-
-def get_max_sizes(st, dt):
-    h = {}
-    for name, e in dt.items():
-        v = e.get('size', '0')
-        h[name] = int(v)
-    for name, e in itertools.chain((i for i in st.items() if i[1].get('type') != 'Message'),
-                                   (i for i in st.items() if i[1].get('type') == 'Message')):
-        s = 0
-        for m in e:
-            x = h.get(m.get('type'), 0)
-            s += x  * int(m.get('cardinality'))
-        h[name] = s
-    return h
-
-def get_min_sizes(st, dt):
-    h = {}
-    for name, e in dt.items():
-        v = e.get('size', '0')
-        if e.get('variableSize') is None:
-            h[name] = int(v)
-        else:
-            h[name] = 0
-    for name, e in itertools.chain((i for i in st.items() if i[1].get('type') != 'Message'),
-                                   (i for i in st.items() if i[1].get('type') == 'Message')):
-        s = 0
-        for m in e:
-            x = h.get(m.get('type'), 0)
-            s += x  * int(m.get('minCardinality', '1'))
         h[name] = s
     return h
 

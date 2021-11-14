@@ -147,10 +147,16 @@ def mk_empty_inssum(bs):
     m.SecurityID = 42 # instrument id
     m.SoldOutIndicator = eobi.SoldOutIndicator.SOLDOUT
     assert m.NoMDEntries == 0
-    n = m.pack_into(bs, n)
+    # NB: in contrast to ETI, EOBI messages with variable-length arrays are
+    # never shortened
+    m.MessageHeader.BodyLen = m.sizes[1]
+    m.pack_into(bs, n)
+    n += m.sizes[1]
+
     m.NoMDEntries = 0xff # NO_VALUE
     m.MarketCondition = eobi.MarketCondition.STRESSED
-    n = m.pack_into(bs, n)
+    m.pack_into(bs, n)
+    n += m.sizes[1]
     return memoryview(bs[:n])
     
 def dump(u):

@@ -16,6 +16,8 @@ import sys
 import xml.etree.ElementTree as ET
 
 
+from etimodel import get_min_sizes, get_max_sizes
+
 
 def get_data_types(d):
     r = d.getroot()
@@ -173,6 +175,7 @@ def get_fields(st, dt):
 def gen_field_handles(st, dt, proto, o=sys.stdout):
     print(f'''static expert_field ei_{proto}_counter_overflow = EI_INIT;
 static expert_field ei_{proto}_invalid_template = EI_INIT;
+static expert_field ei_{proto}_invalid_length = EI_INIT;
 ''', file=o)
 
     vs = get_fields(st, dt)
@@ -356,6 +359,23 @@ def gen_template_table(min_templateid, n, ts, fields2idx, o=sys.stdout):
     s = '\n            , '.join(xs)
     print(f'    int tid2fidx[] = {{\n              {s}\n    }};', file=o)
 
+def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
+    is_eobi = proto.startswith('eobi')
+    xs = [ '0' if is_eobi else '{ 0, 0}' ] * n
+    min_s = get_min_sizes(st, dt)
+    max_s = get_max_sizes(st, dt)
+    if is_eobi:
+        for tid, name in ts:
+            xs[tid - min_templateid] = f'{max_s[name]} /* {name} */'
+    else:
+        for tid, name in ts:
+            xs[tid - min_templateid] = f'{{ {min_s[name]}, {max_s[name]} }} /* {name} */'
+    s = '\n            , '.join(xs)
+    if is_eobi:
+        print(f'    uint32_t tid2size[] = {{\n              {s}\n    }};', file=o)
+    else:
+        print(f'    uint32_t tid2size[{n}][2] = {{\n              {s}\n    }};', file=o)
+
 def gen_dissect_structs(o=sys.stdout):
     print('''
 enum ETI_Type {
@@ -419,6 +439,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
 
     fields2idx = gen_fields_table(st, dt, sh, o)
     gen_template_table(min_templateid, n, ts, fields2idx, o)
+    gen_sizes_table(min_templateid, n, st, dt, ts, proto, o)
 
     print(f'''    if (templateid < {min_templateid} || templateid > {max_templateid}) {{
         proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_template, tvb, {template_off}, 4,
@@ -430,9 +451,24 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
         proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_template, tvb, {template_off}, 4,
             "Unallocated Template ID: %" PRIu16, templateid);
         return tvb_captured_length(tvb);
-    }}
+    }}''', file=o)
 
-    int old_fidx = 0;
+    if proto.startswith('eobi'):
+        print(f'''    if (bodylen != tid2size[templateid - {min_templateid}]) {{
+        proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_length, tvb, 0, {template_off},
+                "Unexpected BodyLen value of %" PRIu32 ", expected:  %" PRIu32, bodylen, tid2size[templateid - {min_templateid}]);
+    }}''', file=o)
+    else:
+        print(f'''    if (bodylen < tid2size[templateid - {min_templateid}][0] || bodylen > tid2size[templateid - {min_templateid}][1]) {{
+        if (tid2size[templateid - {min_templateid}][0] != tid2size[templateid - {min_templateid}][1])
+            proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_length, tvb, 0, {template_off},
+                    "Unexpected BodyLen value of %" PRIu32 ", expected:  %" PRIu32 "..%" PRIu32, bodylen, tid2size[templateid - {min_templateid}][0], tid2size[templateid - {min_templateid}][1]);
+        else
+            proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_length, tvb, 0, {template_off},
+                    "Unexpected BodyLen value of %" PRIu32 ", expected:  %" PRIu32, bodylen, tid2size[templateid - {min_templateid}][0]);
+    }}''', file=o)
+
+    print(f'''    int old_fidx = 0;
     unsigned top = 1;
     unsigned counter[8] = {{0}};
     unsigned off = 0;
@@ -720,6 +756,10 @@ proto_register_{proto}(void)
         {{
             &ei_{proto}_invalid_template,
             {{ "{proto}.invalid_template", PI_PROTOCOL, PI_ERROR, "Invalid Template ID", EXPFILL }}
+        }},
+        {{
+            &ei_{proto}_invalid_length,
+            {{ "{proto}.invalid_length", PI_PROTOCOL, PI_ERROR, "Invalid Body Length", EXPFILL }}
         }}
     }};''', file=o)
 
