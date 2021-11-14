@@ -253,7 +253,7 @@ def gen_subtree_array(st, proto='eti', o=sys.stdout):
     n = sum(1 for name, e in st.items() if e.get('type') != 'Message')
     n += 1
     s = ', '.join(f'&ett_{proto}[{i}]' for i in range(n))
-    print(f'    static gint *ett[] = {{ {s} }};', file=o)
+    print(f'    static gint * const ett[] = {{ {s} }};', file=o)
 
 
 def gen_fields_table(st, dt, sh, o=sys.stdout):
@@ -358,7 +358,7 @@ def gen_template_table(min_templateid, n, ts, fields2idx, o=sys.stdout):
     for tid, name in ts:
         xs[tid - min_templateid] = f'{fields2idx[name]} /* {name} */'
     s = '\n            , '.join(xs)
-    print(f'    int tid2fidx[] = {{\n              {s}\n    }};', file=o)
+    print(f'    const int tid2fidx[] = {{\n              {s}\n    }};', file=o)
 
 def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
     is_eobi = proto.startswith('eobi')
@@ -373,9 +373,9 @@ def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
             xs[tid - min_templateid] = f'{{ {min_s[name]}, {max_s[name]} }} /* {name} */'
     s = '\n            , '.join(xs)
     if is_eobi:
-        print(f'    uint32_t tid2size[] = {{\n              {s}\n    }};', file=o)
+        print(f'    const uint32_t tid2size[] = {{\n              {s}\n    }};', file=o)
     else:
-        print(f'    uint32_t tid2size[{n}][2] = {{\n              {s}\n    }};', file=o)
+        print(f'    const uint32_t tid2size[{n}][2] = {{\n              {s}\n    }};', file=o)
 
 def gen_dissect_structs(o=sys.stdout):
     print('''
