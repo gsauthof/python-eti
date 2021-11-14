@@ -332,16 +332,21 @@ def gen_block(name, e, st, dt, us, sizes, min_sizes, max_sizes, version, o=sys.s
     if sizes[name] == 0 and e.get('type') == 'Message':
         header = 'MessageHeaderOut' if e.find('Member[@name="MessageHeaderIn"]') is None else 'MessageHeaderIn'
         ls = []
+        seen_var_string = False
         for xs in ms:
             t = dt.get(xs[0].get('type'))
             l = sum(sizes[m.get("type")] for m in xs)
             if is_var_string(t):
                 ls.append(f'self.{xs[0].get("counter")}')
+                seen_var_string = True
             elif xs[0].get('minCardinality') is not None:
                 ls.append(f'self.{xs[0].get("counter")} * {l}')
             else:
                 ls.append(str(l))
-        print(f'        self.{header}.BodyLen = {" + ".join(ls)}', file=o)
+        if seen_var_string:
+            print(f'        self.{header}.BodyLen = ({" + ".join(ls)} + 7) // 8 * 8', file=o)
+        else:
+            print(f'        self.{header}.BodyLen = {" + ".join(ls)}', file=o)
     else:
         print(f'        pass', file=o)
     print(file=o)
@@ -397,8 +402,9 @@ def gen_pack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
                     print(f'        o = off + {off}', file=o)
                     dyn = True
                     off_str = 'o'
-                print(f'        struct.pack_into(f"<{{self.{xs[0].get("counter")}}}s", buf, {off_str}, self.{xs[0].get("name")})', file=o)
-                print(f'        o += self.{xs[0].get("counter")}', file=o)
+                print(f'        slack = (o + self.{xs[0].get("counter")} + 7) // 8 * 8 - (o + self.{xs[0].get("counter")})', file=o)
+                print(f'        struct.pack_into(f"<{{self.{xs[0].get("counter")}}}s{{slack}}x", buf, {off_str}, self.{xs[0].get("name")})', file=o)
+                print(f'        o += self.{xs[0].get("counter")} + slack', file=o)
             elif xs[0].get('minCardinality') is not None:
                 if not dyn:
                     print(f'        o = off + {off}', file=o)

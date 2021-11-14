@@ -32,6 +32,16 @@ def mk_reject(text, seq, bs):
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
+def mk_unaligned(text, seq, bs):
+    m = eti.Reject()
+    m.NRResponseHeaderME.MsgSeqNum = seq
+    m.SessionRejectReason = eti.SessionRejectReason.PRICE_NOT_REASONABLE
+    m.VarText = text.encode()
+    m.VarTextLen = len(m.VarText)
+    m.MessageHeaderOut.BodyLen += m.VarTextLen
+    n = m.pack_into(bs)
+    return memoryview(bs)[:m.MessageHeaderOut.BodyLen]
+
 def mk_exec_report(bs):
     m = eti.OrderExecReportBroadcast()
     m.RBCHeaderME.PartitionID = 23
@@ -188,6 +198,9 @@ def gen_eti():
     dump(u)
 
     u = mk_invalid_enum(buf)
+    dump(u)
+
+    u = mk_unaligned('show unaligned', 666, buf)
     dump(u)
 
 def gen_eobi():

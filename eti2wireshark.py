@@ -176,6 +176,7 @@ def gen_field_handles(st, dt, proto, o=sys.stdout):
     print(f'''static expert_field ei_{proto}_counter_overflow = EI_INIT;
 static expert_field ei_{proto}_invalid_template = EI_INIT;
 static expert_field ei_{proto}_invalid_length = EI_INIT;
+static expert_field ei_{proto}_unaligned = EI_INIT;
 ''', file=o)
 
     vs = get_fields(st, dt)
@@ -466,7 +467,11 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
         else
             proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_length, tvb, 0, {template_off},
                     "Unexpected BodyLen value of %" PRIu32 ", expected:  %" PRIu32, bodylen, tid2size[templateid - {min_templateid}][0]);
-    }}''', file=o)
+    }}
+    if (bodylen % 8)
+        proto_tree_add_expert_format(root, pinfo, &ei_{proto}_unaligned, tvb, 0, {template_off},
+                "BodyLen value of %" PRIu32 " is not dividable by 8", bodylen);
+''', file=o)
 
     print(f'''    int old_fidx = 0;
     unsigned top = 1;
@@ -760,6 +765,10 @@ proto_register_{proto}(void)
         {{
             &ei_{proto}_invalid_length,
             {{ "{proto}.invalid_length", PI_PROTOCOL, PI_ERROR, "Invalid Body Length", EXPFILL }}
+        }},
+        {{
+            &ei_{proto}_unaligned,
+            {{ "{proto}.unaligned", PI_PROTOCOL, PI_ERROR, "A Body Length not dividable by 8 leads to unaligned followup messages", EXPFILL }}
         }}
     }};''', file=o)
 
