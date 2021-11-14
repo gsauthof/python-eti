@@ -88,6 +88,14 @@ def mk_login(bs):
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
+def mk_invalid_template(bs, tid):
+    m = eti.UserLoginRequest()
+    m.MessageHeaderIn.TemplateID = tid
+    m.Username = 1234
+    m.Password = b'geheim'
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
+
 def mk_heartbeat(bs):
     ph = eobi.PacketHeader()
     ph.ApplSeqNum = 4712
@@ -159,6 +167,11 @@ def gen_eti():
     u = mk_xti_mod_order(buf)
     dump(u)
     u = mk_mod_order(buf, 'test stray chars')
+    dump(u)
+
+    u = mk_invalid_template(buf, 23)
+    dump(u)
+    u = mk_invalid_template(buf, 10105)
     dump(u)
 
 def gen_eobi():

@@ -171,7 +171,9 @@ def get_fields(st, dt):
     return vs
 
 def gen_field_handles(st, dt, proto, o=sys.stdout):
-    print(f'static expert_field ei_{proto}_counter_overflow = EI_INIT;', file=o)
+    print(f'''static expert_field ei_{proto}_counter_overflow = EI_INIT;
+static expert_field ei_{proto}_invalid_template = EI_INIT;
+''', file=o)
 
     vs = get_fields(st, dt)
     s = ', '.join('-1' for i in range(len(vs)))
@@ -401,7 +403,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "{proto.upper()}");
     col_clear(pinfo->cinfo, COL_INFO);
     guint16 templateid = tvb_get_letohs(tvb, {template_off});
-    const char *template_str = val_to_str(templateid, &enum_names[TEMPLATEID_ENUMS_IDX], "Unknown {proto.upper()} template: 0x04x");
+    const char *template_str = val_to_str(templateid, &enum_names[TEMPLATEID_ENUMS_IDX], "Unknown {proto.upper()} template: 0x%04x");
     col_add_fstr(pinfo->cinfo, COL_INFO, "%s", template_str);
 
     /* create display subtree for the protocol */
@@ -418,11 +420,17 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     fields2idx = gen_fields_table(st, dt, sh, o)
     gen_template_table(min_templateid, n, ts, fields2idx, o)
 
-    print(f'''    if (templateid < {min_templateid} || templateid > {max_templateid})
+    print(f'''    if (templateid < {min_templateid} || templateid > {max_templateid}) {{
+        proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_template, tvb, {template_off}, 4,
+            "Template ID out of range: %" PRIu16, templateid);
         return tvb_captured_length(tvb);
+    }}
     int fidx = tid2fidx[templateid - {min_templateid}];
-    if (fidx == -1)
+    if (fidx == -1) {{
+        proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_template, tvb, {template_off}, 4,
+            "Unallocated Template ID: %" PRIu16, templateid);
         return tvb_captured_length(tvb);
+    }}
 
     int old_fidx = 0;
     unsigned top = 1;
@@ -707,7 +715,11 @@ proto_register_{proto}(void)
     print(f'''    static ei_register_info ei[] = {{
         {{
             &ei_{proto}_counter_overflow,
-            {{ "{proto}.counter_zero", PI_PROTOCOL, PI_WARN, "Counter Overflow", EXPFILL }}
+            {{ "{proto}.counter_overflow", PI_PROTOCOL, PI_WARN, "Counter Overflow", EXPFILL }}
+        }},
+        {{
+            &ei_{proto}_invalid_template,
+            {{ "{proto}.invalid_template", PI_PROTOCOL, PI_ERROR, "Invalid Template ID", EXPFILL }}
         }}
     }};''', file=o)
 
