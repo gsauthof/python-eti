@@ -470,7 +470,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     }}
     if (bodylen % 8)
         proto_tree_add_expert_format(root, pinfo, &ei_{proto}_unaligned, tvb, 0, {template_off},
-                "BodyLen value of %" PRIu32 " is not dividable by 8", bodylen);
+                "BodyLen value of %" PRIu32 " is not divisible by 8", bodylen);
 ''', file=o)
 
     print(f'''    int old_fidx = 0;
@@ -768,7 +768,7 @@ proto_register_{proto}(void)
         }},
         {{
             &ei_{proto}_unaligned,
-            {{ "{proto}.unaligned", PI_PROTOCOL, PI_ERROR, "A Body Length not dividable by 8 leads to unaligned followup messages", EXPFILL }}
+            {{ "{proto}.unaligned", PI_PROTOCOL, PI_ERROR, "A Body Length not divisible by 8 leads to unaligned followup messages", EXPFILL }}
         }}
     }};''', file=o)
 

@@ -211,11 +211,21 @@ Basically PyPy speeds up the serialization by a factor of 10 and the deserializa
 
 The ETI and EOBI protocols specify a message stream, where each
 message is tagged and starts with a length field, although most
-messages are of fixed length. Most message fields are of fixed
-length, those which aren't are prefixed with an accompanying
+messages are of fixed size. Most message fields are of fixed
+size, those which aren't are prefixed with an accompanying
 length field. Integers a encoded in little endian byte order,
-each field size is divisible by 8 bit, and the size of each
-message is divisible by 8 byte.
+each field size is divisible by 8 bits, and the size of each
+message is divisible by 8 bytes.
+
+One important difference between the ETI and EOBI encoding is
+that whole EOBI messages are of fixed size whereas ETI messages
+may vary in size and only their sub-records are of fixed size.
+That means that arrays in ETI messages are minimally encoded
+(i.e. only the filled elements are put on the wire) while arrays
+in EOBI are fully encoded (i.e. trailing empty elements act as
+additional padding). Some ETI messages also include string fields
+of variable size and those are zero-padded such that the
+message size is divisible by 8.
 
 ETI runs over TCPv4 while EOBI is specified on top of UDPv4.
 
