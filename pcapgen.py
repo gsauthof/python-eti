@@ -168,6 +168,24 @@ def mk_empty_inssum(bs):
     m.pack_into(bs, n)
     n += m.sizes[1]
     return memoryview(bs[:n])
+
+def mk_counter_overflow(bs):
+    bs.__init__(1024)
+    ph = eobi.PacketHeader()
+    ph.ApplSeqNum = 4714
+    ph.MarketSegmentID = 1337 # product id
+    ph.PartitionID = 7
+    ph.CompletionIndicator = eobi.CompletionIndicator.COMPLETE
+    ph.DSCP = 0x5c
+    ph.TransactTime = 1633864284123480238
+    n = ph.pack_into(bs)
+    m = eobi.MassInstrumentStateChange()
+    m.SecurityMassTradingStatus = eobi.SecurityMassTradingStatus.INTRADAYAUCTION
+    m.NoRelatedSym = 25 # NB: max: 24 => overflow
+    m.MessageHeader.BodyLen = m.sizes[1]
+    m.pack_into(bs, n)
+    n += m.MessageHeader.BodyLen
+    return memoryview(bs[:n])
     
 def dump(u):
     print(f'000000 {u.hex(sep=" ", bytes_per_sep=1)}\n')
@@ -208,6 +226,8 @@ def gen_eobi():
     u = mk_heartbeat(buf)
     dump(u)
     u = mk_summary(buf)
+    dump(u)
+    u = mk_counter_overflow(buf)
     dump(u)
     u = mk_empty_inssum(buf)
     dump(u)
