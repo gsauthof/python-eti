@@ -45,8 +45,15 @@ def mk_unaligned(text, seq, bs):
 def mk_exec_report(bs):
     m = eti.OrderExecReportBroadcast()
     m.RBCHeaderME.PartitionID = 23
+    m.OrderID = 815
     m.ClOrdID = 1337
+    # m.SecurityID unset although required
     m.ExecID = 1633861270328920429
+    m.LeavesQty = 7
+    m.CumQty = 8
+    m.CxlQty = 9
+    m.OrderQty = 10
+    m.MarketSegmentID = 36
     m.NoLegExecs = 3
     m.NoFills = 1
     m.NoLegs = 2
@@ -56,10 +63,13 @@ def mk_exec_report(bs):
     c = eti.LegOrdGrpComp()
     c.LegPositionEffect = eti.LegPositionEffect.CLOSE
     m.LegOrdGrp.append(c)
-    m.FillsGrp.append(eti.FillsGrpComp())
+    c = eti.FillsGrpComp()
+    c.FillExecID = 666
+    m.FillsGrp.append(c)
     m.InstrmntLegExecGrp.append(eti.InstrmntLegExecGrpComp())
     c = eti.InstrmntLegExecGrpComp()
     c.LegSide = eti.LegSide.BUY
+    c.LegLastQty = 1234
     m.InstrmntLegExecGrp.append(c)
     m.InstrmntLegExecGrp.append(eti.InstrmntLegExecGrpComp())
     m.update_length()
@@ -78,6 +88,11 @@ def mk_xti_mod_order(bs):
 
 def mk_mod_order(bs, freetext1):
     m = eti.ModifyOrderSingleRequest()
+    m.RequestHeader.MsgSeqNum = 5
+    m.RequestHeader.SenderSubID = 2323
+    m.OrderQty = 99000
+    m.MarketSegmentID = 8989
+    m.SimpleSecurityID = 232
     m.FreeText1 = freetext1.encode()
     m.FreeText3 = b'\0lol'
     n = m.pack_into(bs)
@@ -85,14 +100,18 @@ def mk_mod_order(bs, freetext1):
 
 def mk_logon(bs):
     m = eti.LogonRequest()
+    m.RequestHeader.MsgSeqNum = 1
     m.PartyIDSessionID = 2323
     m.Password = b'geheim23'
     m.ApplicationSystemName = b'skynet'
+    m.ApplicationSystemVersion = b'1.2.3'
+    m.ApplicationSystemVendor = b'ACME'
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
 def mk_login(bs):
     m = eti.UserLoginRequest()
+    m.RequestHeader.MsgSeqNum = 2
     m.Username = 1337
     m.Password = b'besttrader'
     n = m.pack_into(bs)
@@ -101,6 +120,7 @@ def mk_login(bs):
 def mk_invalid_template(bs, tid):
     m = eti.UserLoginRequest()
     m.MessageHeaderIn.TemplateID = tid
+    m.RequestHeader.MsgSeqNum = 2
     m.Username = 1234
     m.Password = b'geheim'
     n = m.pack_into(bs)
@@ -108,6 +128,7 @@ def mk_invalid_template(bs, tid):
 
 def mk_invalid_enum(bs):
     m = eti.DeleteAllOrderRequest()
+    m.RequestHeader.SenderSubID = 88888
     m.SecurityID = 815
     m.Side = 23 # NB: Invalid enumeration value!
     n = m.pack_into(bs)
@@ -136,11 +157,13 @@ def mk_summary(bs):
     ph.TransactTime = 1633864284123456789
     n = ph.pack_into(bs)
     m = eobi.ExecutionSummary()
+    m.MessageHeader.MsgSeqNum = 23
     m.SecurityID = 23 # instrument id
     m.ExecID = 1633864284123000789
     m.LastQty = 400123
     m.AggressorSide = eobi.AggressorSide.BUY
     m.LastPx = 9902422
+    # NB: m.RestingCxlQty unset although it's required
     n = m.pack_into(bs, n)
     return memoryview(bs[:n])
 
@@ -154,6 +177,7 @@ def mk_empty_inssum(bs):
     ph.TransactTime = 1633864284123480230
     n = ph.pack_into(bs)
     m = eobi.InstrumentSummary()
+    m.MessageHeader.MsgSeqNum = 4711
     m.SecurityID = 42 # instrument id
     m.SoldOutIndicator = eobi.SoldOutIndicator.SOLDOUT
     assert m.NoMDEntries == 0
@@ -180,6 +204,7 @@ def mk_counter_overflow(bs):
     ph.TransactTime = 1633864284123480238
     n = ph.pack_into(bs)
     m = eobi.MassInstrumentStateChange()
+    # NB: m.MessageHeader.MsgSeqNum unset although it's required
     m.SecurityMassTradingStatus = eobi.SecurityMassTradingStatus.INTRADAYAUCTION
     m.NoRelatedSym = 25 # NB: max: 24 => overflow
     m.MessageHeader.BodyLen = m.sizes[1]

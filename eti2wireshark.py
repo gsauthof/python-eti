@@ -177,6 +177,7 @@ def gen_field_handles(st, dt, proto, o=sys.stdout):
 static expert_field ei_{proto}_invalid_template = EI_INIT;
 static expert_field ei_{proto}_invalid_length = EI_INIT;
 static expert_field ei_{proto}_unaligned = EI_INIT;
+static expert_field ei_{proto}_missing = EI_INIT;
 ''', file=o)
 
     vs = get_fields(st, dt)
@@ -358,7 +359,7 @@ def gen_template_table(min_templateid, n, ts, fields2idx, o=sys.stdout):
     for tid, name in ts:
         xs[tid - min_templateid] = f'{fields2idx[name]} /* {name} */'
     s = '\n            , '.join(xs)
-    print(f'    const int tid2fidx[] = {{\n              {s}\n    }};', file=o)
+    print(f'    static const int16_t tid2fidx[] = {{\n              {s}\n    }};', file=o)
 
 def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
     is_eobi = proto.startswith('eobi')
@@ -376,6 +377,58 @@ def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
         print(f'    const uint32_t tid2size[] = {{\n              {s}\n    }};', file=o)
     else:
         print(f'    const uint32_t tid2size[{n}][2] = {{\n              {s}\n    }};', file=o)
+
+
+# yes, usage attribute of single fields depends on the context
+# otherwise, we could just put the information into the fields table
+# Example: EOBI.PacketHeader.MessageHeader.MsgSeqNum is unused whereas
+# it's required in the EOBI ExecutionSummary and other messages
+def gen_usage_table(min_templateid, n, ts, ams, o=sys.stdout):
+    def map_usage(m):
+        x = m.get('usage')
+        if x == 'mandatory':
+            return 0
+        elif x == 'optional':
+            return 1
+        elif x == 'unused':
+            return 2
+        else:
+            raise RuntimeError(f'unknown usage value: {x}')
+
+    h = {}
+    i = 0
+    print('    static const unsigned char usages[] = {', file=o)
+    for am in ams:
+        name = am.get("name")
+        tid = int(am.get('numericID'))
+        print(f'            // {name}', file=o)
+        h[tid] = i
+        for e in am:
+            if e.tag == 'Group':
+                print(f'            //// {e.get("type")}', file=o)
+                for m in e:
+                    if m.get('hidden') == 'true' or pad_re.match(m.get('name')):
+                        continue
+                    k = ' ' if i == 0 else ','
+                    print(f'            {k} {map_usage(m)} // {m.get("name")}#{i}', file=o)
+                    i += 1
+                print('            ///', file=o)
+            else:
+                if e.get('hidden') == 'true' or pad_re.match(e.get('name')):
+                    continue
+                k = ' ' if i == 0 else ','
+                print(f'            {k} {map_usage(e)} // {e.get("name")}#{i}', file=o)
+                i += 1
+
+    print('    };', file=o)
+    xs = [ '-1' ] * n
+    t2n = dict(ts)
+    for tid, uidx in h.items():
+        name = t2n[tid]
+        xs[tid - min_templateid] = f'{uidx} /* {name} */'
+    s = '\n            , '.join(xs)
+    print(f'    static const int16_t tid2uidx[] = {{\n            {s}\n    }};', file=o)
+
 
 def gen_dissect_structs(o=sys.stdout):
     print('''
@@ -410,7 +463,7 @@ struct ETI_Field {
 };
 ''', file=o)
 
-def gen_dissect_fn(st, dt, ts, sh, proto, o=sys.stdout):
+def gen_dissect_fn(st, dt, ts, sh, ams, proto, o=sys.stdout):
     if proto.startswith('eti') or proto.startswith('xti'):
         bl_fn = 'tvb_get_letohl'
         template_off = 4
@@ -441,6 +494,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     fields2idx = gen_fields_table(st, dt, sh, o)
     gen_template_table(min_templateid, n, ts, fields2idx, o)
     gen_sizes_table(min_templateid, n, st, dt, ts, proto, o)
+    gen_usage_table(min_templateid, n, ts, ams, o)
 
     print(f'''    if (templateid < {min_templateid} || templateid > {max_templateid}) {{
         proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_template, tvb, {template_off}, 4,
@@ -473,7 +527,12 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 "BodyLen value of %" PRIu32 " is not divisible by 8", bodylen);
 ''', file=o)
 
+    print(f'''    int uidx = tid2uidx[templateid - {min_templateid}];
+    DISSECTOR_ASSERT(uidx >= 0);
+''', file=o)
+
     print(f'''    int old_fidx = 0;
+    int old_uidx = 0;
     unsigned top = 1;
     unsigned counter[8] = {{0}};
     unsigned off = 0;
@@ -483,6 +542,8 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     while (top) {{
         DISSECTOR_ASSERT(fidx >= 0);
         DISSECTOR_ASSERT((size_t)fidx < sizeof fields / sizeof fields[0]);
+        DISSECTOR_ASSERT(uidx >= 0);
+        DISSECTOR_ASSERT((size_t)uidx < sizeof usages / sizeof usages[0]);
         switch (fields[fidx].type) {{
             case ETI_EOF:
                 DISSECTOR_ASSERT(top == 1 || top == 2);
@@ -491,6 +552,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 if (repeats) {{
                     --repeats;
                     fidx = fields[old_fidx].field_handle_idx;
+                    uidx = old_uidx;
                     t = proto_tree_add_subtree(root, tvb, off, -1, ett_{proto}[fields[old_fidx].ett_idx], NULL, &struct_names[fields[old_fidx].size]);
                     struct_off = off;
                 }} else {{
@@ -508,6 +570,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                     t = proto_tree_add_subtree(root, tvb, off, -1, ett_{proto}[fields[fidx].ett_idx], NULL, &struct_names[fields[fidx].size]);
                     struct_off = off;
                     old_fidx = fidx;
+                    old_uidx = uidx;
                     fidx = fields[fidx].field_handle_idx;
                     DISSECTOR_ASSERT(top == 1);
                     ++top;
@@ -523,23 +586,29 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_ASCII);
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_STRING:
                 {{
                     guint8 c = tvb_get_guint8(tvb, off);
                     if (c)
                         proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_ASCII);
-                    else
-                        proto_tree_add_string(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, "NO_VALUE ('0x00...')");
+                    else {{
+                        proto_item *e = proto_tree_add_string(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, "NO_VALUE ('0x00...')");
+                        if (!usages[uidx])
+                            expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
+                    }}
                 }}
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_VAR_STRING:
                 DISSECTOR_ASSERT(fields[fidx].counter_off < sizeof counter / sizeof counter[0]);
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, counter[fields[fidx].counter_off], ENC_ASCII);
                 off += counter[fields[fidx].counter_off];
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_COUNTER:
                 DISSECTOR_ASSERT(fields[fidx].counter_off < sizeof counter / sizeof counter[0]);
@@ -584,6 +653,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 }}
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_UINT:
                 switch (fields[fidx].size) {{
@@ -591,7 +661,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             guint8 x = tvb_get_guint8(tvb, off);
                             if (x == UINT8_MAX) {{
-                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xff)");
+                                proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xff)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu8, x);
                             }}
@@ -601,7 +673,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             guint16 x = tvb_get_letohs(tvb, off);
                             if (x == UINT16_MAX) {{
-                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffff)");
+                                proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffff)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu16, x);
                             }}
@@ -611,7 +685,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             guint32 x = tvb_get_letohl(tvb, off);
                             if (x == UINT32_MAX) {{
-                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffff)");
+                                proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffff)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu32, x);
                             }}
@@ -621,7 +697,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             guint64 x = tvb_get_letoh64(tvb, off);
                             if (x == UINT64_MAX) {{
-                                proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffffffffffff)");
+                                proto_item *e = proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffffffffffff)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu64, x);
                             }}
@@ -630,6 +708,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 }}
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_INT:
                 switch (fields[fidx].size) {{
@@ -637,7 +716,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             gint8 x = tvb_get_gint8(tvb, off);
                             if (x == INT8_MIN) {{
-                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80)");
+                                proto_item *e = proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi8, x);
                             }}
@@ -647,7 +728,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             gint16 x = tvb_get_letohis(tvb, off);
                             if (x == INT16_MIN) {{
-                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000)");
+                                proto_item *e = proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi16, x);
                             }}
@@ -657,7 +740,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             gint32 x = tvb_get_letohil(tvb, off);
                             if (x == INT32_MIN) {{
-                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80000000)");
+                                proto_item *e = proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80000000)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi32, x);
                             }}
@@ -667,7 +752,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                         {{
                             gint64 x = tvb_get_letohi64(tvb, off);
                             if (x == INT64_MIN) {{
-                                proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
+                                proto_item *e = proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
                                 proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi64, x);
                             }}
@@ -676,12 +763,14 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 }}
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_UINT_ENUM:
             case ETI_INT_ENUM:
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN);
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_FIXED_POINT:
                 DISSECTOR_ASSERT(fields[fidx].size == 8);
@@ -690,7 +779,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 {{
                     gint64 x = tvb_get_letohi64(tvb, off);
                     if (x == INT64_MIN) {{
-                        proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
+                        proto_item *e = proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
+                        if (!usages[uidx])
+                            expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                     }} else {{
                         unsigned slack = fields[fidx].counter_off + 1;
                         if (x < 0)
@@ -704,12 +795,14 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 }}
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
             case ETI_TIMESTAMP_NS:
                 DISSECTOR_ASSERT(fields[fidx].size == 8);
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN | ENC_TIME_NSECS);
                 off += fields[fidx].size;
                 ++fidx;
+                ++uidx;
                 break;
         }}
     }}
@@ -769,6 +862,10 @@ proto_register_{proto}(void)
         {{
             &ei_{proto}_unaligned,
             {{ "{proto}.unaligned", PI_PROTOCOL, PI_ERROR, "A Body Length not divisible by 8 leads to unaligned followup messages", EXPFILL }}
+        }},
+        {{
+            &ei_{proto}_missing,
+            {{ "{proto}.missing", PI_PROTOCOL, PI_WARN, "A required value is missing", EXPFILL }}
         }}
     }};''', file=o)
 
@@ -941,6 +1038,8 @@ def group_members(e, dt):
         xs.append(ms)
     return xs
 
+
+
 def parse_args():
     p = argparse.ArgumentParser(description='Generate Wireshark Dissector for ETI/EOBI style protocol specifictions')
     p.add_argument('filename', help='protocol description XML file')
@@ -967,6 +1066,7 @@ def main():
     dt = get_data_types(d)
     st = get_structs(d)
     ts = get_templates(st)
+    ams = d.getroot().find('ApplicationMessages')
 
     gen_header(proto, desc, o)
     print(f'static int proto_{proto} = -1;', file=o)
@@ -974,7 +1074,7 @@ def main():
     gen_enums(dt, ts, o)
     gen_dissect_structs(o)
     sh = gen_subtree_handles(st, proto, o)
-    gen_dissect_fn(st, dt, ts, sh, proto, o)
+    gen_dissect_fn(st, dt, ts, sh, ams, proto, o)
     gen_register_fn(st, dt, proto, desc, o)
     gen_handoff_fn(proto, o)
 

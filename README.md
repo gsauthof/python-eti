@@ -297,9 +297,9 @@ mappings provided etc.
 - [Open-Markets-Initiative/wireshark-lua](https://github.com/Open-Markets-Initiative/wireshark-lua) - A collection of Lua based model-generated Wireshark dissectors for various trading/market data protocols. The ETI/EOBI protocols are listed there as untested. I haven't tested these dissectors - however, the fact that they use another layer of general indirection (the Lua interpreter) surely doesn't help with dissecting speed.<br/>
 The generated ETI 9.1 Lua dissector file contains over 32
 thousand lines whereas the `eti2wireshark.py` generated ETI 9.1
-dissector C-code just spans about 7.5 thousand lines - where most
+dissector C-code just spans about 13 thousand lines - where most
 of the lines are lookup tables that are placed into the read-only
-data segment.<br/>
+data segment (i.e. more than 12 thousand lines).<br/>
 FWIW, in contrast to the eti2wireshark dissectors, the Lua dissectors
 pretty-print field names with spaces between the camel-cased
 elements.<br/>
