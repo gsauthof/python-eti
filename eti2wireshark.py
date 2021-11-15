@@ -184,6 +184,9 @@ static expert_field ei_{proto}_overused = EI_INIT;
     vs = get_fields(st, dt)
     s = ', '.join('-1' for i in range(len(vs)))
     print(f'static int hf_{proto}[] = {{ {s} }};', file=o)
+    print(f'''static int hf_{proto}_dscp_exec_summary = -1;
+static int hf_{proto}_dscp_improved = -1;
+static int hf_{proto}_dscp_widened = -1;''', file=o)
     print('enum Field_Handle_Index {', file=o)
     for i, (name, _) in enumerate(vs):
         c = ' ' if i == 0 else ','
@@ -193,6 +196,8 @@ static expert_field ei_{proto}_overused = EI_INIT;
 def type2ft(t):
     if is_timestamp_ns(t):
         return 'FT_ABSOLUTE_TIME'
+    if is_dscp(t):
+        return 'FT_UINT8'
     if is_int(t):
         if t.get('rootType') == 'String':
             return 'FT_CHAR'
@@ -213,6 +218,8 @@ def type2ft(t):
 def type2enc(t):
     if is_timestamp_ns(t):
         return 'ABSOLUTE_TIME_UTC'
+    if is_dscp(t):
+        return 'BASE_HEX'
     if is_int(t):
         if t.get('rootType') == 'String':
             # NB: basically only used when enum and value is unknown
@@ -230,13 +237,28 @@ def gen_field_info(st, dt, proto='eti', o=sys.stdout):
         c = ' ' if i == 0 else ','
         ft = type2ft(t)
         enc = type2enc(t)
-        if is_enum(t):
+        if is_enum(t) and not is_dscp(t):
             vals = f'VALS(&enum_names[{t.get("name").upper()}_ENUMS_IDX])'
         else:
             vals = 'NULL'
         print(f'''        {c} {{ &hf_{proto}[{name.upper()}_FH_IDX],
               {{ "{name}", "{proto}.{name.lower()}",
                 {ft}, {enc}, {vals}, 0x0,
+                NULL, HFILL }}
+          }}''', file=o)
+    print(f'''        , {{ &hf_{proto}_dscp_exec_summary,
+              {{ "DSCP_ExecSummary", "{proto}.dscp_execsummary",
+                FT_BOOLEAN, 8, NULL, 0x10,
+                NULL, HFILL }}
+          }}
+        , {{ &hf_{proto}_dscp_improved,
+              {{ "DSCP_Improved", "{proto}.dscp_improved",
+                FT_BOOLEAN, 8, NULL, 0x20,
+                NULL, HFILL }}
+          }}
+        , {{ &hf_{proto}_dscp_widened,
+              {{ "DSCP_Widened", "{proto}.dscp_widened",
+                FT_BOOLEAN, 8, NULL, 0x40,
                 NULL, HFILL }}
           }}''', file=o)
     print('    };', file=o)
@@ -247,7 +269,8 @@ def gen_subtree_handles(st, proto='eti', o=sys.stdout):
     ns.sort()
     s = ', '.join('-1' for i in range(len(ns) + 1))
     h = dict( (n, i) for i, n in enumerate(ns, 1) )
-    print(f'gint ett_{proto}[] = {{ {s} }};', file=o)
+    print(f'static gint ett_{proto}[] = {{ {s} }};', file=o)
+    print(f'static gint ett_{proto}_dscp = -1;', file=o)
     return h
 
 
@@ -255,7 +278,7 @@ def gen_subtree_array(st, proto='eti', o=sys.stdout):
     n = sum(1 for name, e in st.items() if e.get('type') != 'Message')
     n += 1
     s = ', '.join(f'&ett_{proto}[{i}]' for i in range(n))
-    print(f'    static gint * const ett[] = {{ {s} }};', file=o)
+    print(f'    static gint * const ett[] = {{ {s}, &ett_{proto}_dscp }};', file=o)
 
 
 def gen_fields_table(st, dt, sh, o=sys.stdout):
@@ -304,6 +327,8 @@ def gen_fields_table(st, dt, sh, o=sys.stdout):
                 if size != 8:
                     raise RuntimeError('only supporting timestamps')
                 print(f'        {c} {{ ETI_TIMESTAMP_NS, 0, {size}, {fh}, 0 }}', file=o)
+            elif is_dscp(t):
+                print(f'        {c} {{ ETI_DSCP, 0, {size}, {fh}, 0 }}', file=o)
             elif is_int(t):
                 u = 'U' if is_unsigned(t) else ''
                 if t.get('rootType') == 'String':
@@ -431,6 +456,14 @@ def gen_usage_table(min_templateid, n, ts, ams, o=sys.stdout):
     print(f'    static const int16_t tid2uidx[] = {{\n            {s}\n    }};', file=o)
 
 
+def gen_dscp_table(proto, o=sys.stdout):
+    print(f'''    static int * const dscp_bits[] = {{
+        &hf_{proto}_dscp_exec_summary,
+        &hf_{proto}_dscp_improved,
+        &hf_{proto}_dscp_widened,
+        NULL
+    }};''', file=o)
+
 
 def mk_int_case(size, signed, proto):
     signed_str = 'i' if signed else ''
@@ -486,7 +519,8 @@ enum ETI_Type {
     ETI_STRING,
     ETI_VAR_STRING,
     ETI_STRUCT,
-    ETI_VAR_STRUCT
+    ETI_VAR_STRUCT,
+    ETI_DSCP
 };
 
 struct ETI_Field {
@@ -535,6 +569,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     gen_template_table(min_templateid, n, ts, fields2idx, o)
     gen_sizes_table(min_templateid, n, st, dt, ts, proto, o)
     gen_usage_table(min_templateid, n, ts, ams, o)
+    gen_dscp_table(proto, o)
 
     print(f'''    if (templateid < {min_templateid} || templateid > {max_templateid}) {{
         proto_tree_add_expert_format(root, pinfo, &ei_{proto}_invalid_template, tvb, {template_off}, 4,
@@ -756,6 +791,13 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 ++fidx;
                 ++uidx;
                 break;
+            case ETI_DSCP:
+                DISSECTOR_ASSERT(fields[fidx].size == 1);
+                proto_tree_add_bitmask(t, tvb, off, hf_{proto}[fields[fidx].field_handle_idx], ett_{proto}_dscp, dscp_bits, ENC_LITTLE_ENDIAN);
+                off += fields[fidx].size;
+                ++fidx;
+                ++uidx;
+                break;
         }}
     }}
 ''', file=o)
@@ -916,6 +958,9 @@ def is_fixed_point(t):
 
 def is_timestamp_ns(t):
     return t is not None and t.get('type') == 'UTCTimestamp'
+
+def is_dscp(t):
+    return t is not None and t.get('name') == 'DSCP'
 
 pad_re = re.compile('Pad[1-9]')
 

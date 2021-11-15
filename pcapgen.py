@@ -140,6 +140,7 @@ def mk_heartbeat(bs):
     ph.MarketSegmentID = 1337
     ph.PartitionID = 7
     ph.CompletionIndicator = eobi.CompletionIndicator.COMPLETE
+    ph.DSCP = 0
     ph.TransactTime = 1633864284123456789
     n = ph.pack_into(bs)
     m = eobi.Heartbeat()
@@ -252,6 +253,7 @@ def mk_overused(bs):
     ph.ApplSeqNum = 4733
     ph.MarketSegmentID = 90211
     ph.PartitionID = 6
+    ph.DSCP = 0
     n = ph.pack_into(bs)
     m = eobi.Heartbeat()
     m.LastMsgSeqNumProcessed = 14141
