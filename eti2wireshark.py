@@ -178,6 +178,7 @@ static expert_field ei_{proto}_invalid_template = EI_INIT;
 static expert_field ei_{proto}_invalid_length = EI_INIT;
 static expert_field ei_{proto}_unaligned = EI_INIT;
 static expert_field ei_{proto}_missing = EI_INIT;
+static expert_field ei_{proto}_overused = EI_INIT;
 ''', file=o)
 
     vs = get_fields(st, dt)
@@ -460,7 +461,9 @@ def mk_int_case(size, signed, proto):
                                 if (!usages[uidx])
                                     expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
                             }} else {{
-                                proto_tree_add_{unsigned_str}int{pt_size}_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRI{fmt_str}{size * 8}, x);
+                                proto_item *e = proto_tree_add_{unsigned_str}int{pt_size}_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRI{fmt_str}{size * 8}, x);
+                                if (usages[uidx] == 2)
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_overused, "unused value is set");
                             }}
                         }}
                         break;'''
@@ -815,6 +818,10 @@ proto_register_{proto}(void)
         {{
             &ei_{proto}_missing,
             {{ "{proto}.missing", PI_PROTOCOL, PI_WARN, "A required value is missing", EXPFILL }}
+        }},
+        {{
+            &ei_{proto}_overused,
+            {{ "{proto}.overused", PI_PROTOCOL, PI_WARN, "An unused value is set", EXPFILL }}
         }}
     }};''', file=o)
 

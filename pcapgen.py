@@ -246,6 +246,18 @@ def gen_eti():
     u = mk_unaligned('show unaligned', 666, buf)
     dump(u)
 
+def mk_overused(bs):
+    ph = eobi.PacketHeader()
+    ph.MessageHeader.MsgSeqNum = 0x23
+    ph.ApplSeqNum = 4733
+    ph.MarketSegmentID = 90211
+    ph.PartitionID = 6
+    n = ph.pack_into(bs)
+    m = eobi.Heartbeat()
+    m.LastMsgSeqNumProcessed = 14141
+    n = m.pack_into(bs, n)
+    return memoryview(bs[:n])
+
 def gen_eobi():
     buf = bytearray(1024)
     u = mk_heartbeat(buf)
@@ -255,6 +267,8 @@ def gen_eobi():
     u = mk_counter_overflow(buf)
     dump(u)
     u = mk_empty_inssum(buf)
+    dump(u)
+    u = mk_overused(buf)
     dump(u)
 
 def parse_args():
