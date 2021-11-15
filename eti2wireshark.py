@@ -384,8 +384,8 @@ def gen_template_table(min_templateid, n, ts, fields2idx, o=sys.stdout):
     xs = [ '-1' ] * n
     for tid, name in ts:
         xs[tid - min_templateid] = f'{fields2idx[name]} /* {name} */'
-    s = '\n            , '.join(xs)
-    print(f'    static const int16_t tid2fidx[] = {{\n              {s}\n    }};', file=o)
+    s = '\n        , '.join(xs)
+    print(f'    static const int16_t tid2fidx[] = {{\n          {s}\n    }};', file=o)
 
 def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
     is_eobi = proto.startswith('eobi')
@@ -398,11 +398,11 @@ def gen_sizes_table(min_templateid, n, st, dt, ts, proto, o=sys.stdout):
     else:
         for tid, name in ts:
             xs[tid - min_templateid] = f'{{ {min_s[name]}, {max_s[name]} }} /* {name} */'
-    s = '\n            , '.join(xs)
+    s = '\n        , '.join(xs)
     if is_eobi:
-        print(f'    const uint32_t tid2size[] = {{\n              {s}\n    }};', file=o)
+        print(f'    static const uint32_t tid2size[] = {{\n          {s}\n    }};', file=o)
     else:
-        print(f'    const uint32_t tid2size[{n}][2] = {{\n              {s}\n    }};', file=o)
+        print(f'    static const uint32_t tid2size[{n}][2] = {{\n          {s}\n    }};', file=o)
 
 
 # yes, usage attribute of single fields depends on the context
@@ -427,23 +427,23 @@ def gen_usage_table(min_templateid, n, ts, ams, o=sys.stdout):
     for am in ams:
         name = am.get("name")
         tid = int(am.get('numericID'))
-        print(f'            // {name}', file=o)
+        print(f'        // {name}', file=o)
         h[tid] = i
         for e in am:
             if e.tag == 'Group':
-                print(f'            //// {e.get("type")}', file=o)
+                print(f'        //// {e.get("type")}', file=o)
                 for m in e:
                     if m.get('hidden') == 'true' or pad_re.match(m.get('name')):
                         continue
                     k = ' ' if i == 0 else ','
-                    print(f'            {k} {map_usage(m)} // {m.get("name")}#{i}', file=o)
+                    print(f'        {k} {map_usage(m)} // {m.get("name")}#{i}', file=o)
                     i += 1
-                print('            ///', file=o)
+                print('        ///', file=o)
             else:
                 if e.get('hidden') == 'true' or pad_re.match(e.get('name')):
                     continue
                 k = ' ' if i == 0 else ','
-                print(f'            {k} {map_usage(e)} // {e.get("name")}#{i}', file=o)
+                print(f'        {k} {map_usage(e)} // {e.get("name")}#{i}', file=o)
                 i += 1
 
     print('    };', file=o)
@@ -452,8 +452,8 @@ def gen_usage_table(min_templateid, n, ts, ams, o=sys.stdout):
     for tid, uidx in h.items():
         name = t2n[tid]
         xs[tid - min_templateid] = f'{uidx} /* {name} */'
-    s = '\n            , '.join(xs)
-    print(f'    static const int16_t tid2uidx[] = {{\n            {s}\n    }};', file=o)
+    s = '\n        , '.join(xs)
+    print(f'    static const int16_t tid2uidx[] = {{\n        {s}\n    }};', file=o)
 
 
 def gen_dscp_table(proto, o=sys.stdout):
