@@ -430,6 +430,43 @@ def gen_usage_table(min_templateid, n, ts, ams, o=sys.stdout):
     print(f'    static const int16_t tid2uidx[] = {{\n            {s}\n    }};', file=o)
 
 
+
+def mk_int_case(size, signed, proto):
+    signed_str = 'i' if signed else ''
+    unsigned_str = '' if signed else 'u'
+    fmt_str = 'i' if signed else 'u'
+    if size == 2:
+        size_str = 's'
+    elif size == 4:
+        size_str = 'l'
+    elif size == 8:
+        size_str = '64'
+    type_str = f'g{unsigned_str}int{size * 8}'
+    no_value_str = f'INT{size * 8}_MIN' if signed else f'UINT{size * 8}_MAX'
+    pt_size = '64' if size == 8 else ''
+    if signed:
+        hex_str = '0x80' + '00' * (size - 1)
+    else:
+        hex_str = '0x' + 'ff' * size
+    if size == 1:
+        fn = f'tvb_get_g{unsigned_str}int8'
+    else:
+        fn = f'tvb_get_letoh{signed_str}{size_str}'
+    s = f'''case {size}:
+                        {{
+                            {type_str} x = {fn}(tvb, off);
+                            if (x == {no_value_str}) {{
+                                proto_item *e = proto_tree_add_{unsigned_str}int{pt_size}_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE ({hex_str})");
+                                if (!usages[uidx])
+                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
+                            }} else {{
+                                proto_tree_add_{unsigned_str}int{pt_size}_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRI{fmt_str}{size * 8}, x);
+                            }}
+                        }}
+                        break;'''
+    return s
+
+
 def gen_dissect_structs(o=sys.stdout):
     print('''
 enum ETI_Type {
@@ -657,54 +694,10 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 break;
             case ETI_UINT:
                 switch (fields[fidx].size) {{
-                    case 1:
-                        {{
-                            guint8 x = tvb_get_guint8(tvb, off);
-                            if (x == UINT8_MAX) {{
-                                proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xff)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu8, x);
-                            }}
-                        }}
-                        break;
-                    case 2:
-                        {{
-                            guint16 x = tvb_get_letohs(tvb, off);
-                            if (x == UINT16_MAX) {{
-                                proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffff)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu16, x);
-                            }}
-                        }}
-                        break;
-                    case 4:
-                        {{
-                            guint32 x = tvb_get_letohl(tvb, off);
-                            if (x == UINT32_MAX) {{
-                                proto_item *e = proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffff)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_uint_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu32, x);
-                            }}
-                        }}
-                        break;
-                    case 8:
-                        {{
-                            guint64 x = tvb_get_letoh64(tvb, off);
-                            if (x == UINT64_MAX) {{
-                                proto_item *e = proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0xffffffffffffffff)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_uint64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIu64, x);
-                            }}
-                        }}
-                        break;
+                    {mk_int_case(1, False, proto)}
+                    {mk_int_case(2, False, proto)}
+                    {mk_int_case(4, False, proto)}
+                    {mk_int_case(8, False, proto)}
                 }}
                 off += fields[fidx].size;
                 ++fidx;
@@ -712,54 +705,10 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 break;
             case ETI_INT:
                 switch (fields[fidx].size) {{
-                    case 1:
-                        {{
-                            gint8 x = tvb_get_gint8(tvb, off);
-                            if (x == INT8_MIN) {{
-                                proto_item *e = proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi8, x);
-                            }}
-                        }}
-                        break;
-                    case 2:
-                        {{
-                            gint16 x = tvb_get_letohis(tvb, off);
-                            if (x == INT16_MIN) {{
-                                proto_item *e = proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi16, x);
-                            }}
-                        }}
-                        break;
-                    case 4:
-                        {{
-                            gint32 x = tvb_get_letohil(tvb, off);
-                            if (x == INT32_MIN) {{
-                                proto_item *e = proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x80000000)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_int_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi32, x);
-                            }}
-                        }}
-                        break;
-                    case 8:
-                        {{
-                            gint64 x = tvb_get_letohi64(tvb, off);
-                            if (x == INT64_MIN) {{
-                                proto_item *e = proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "NO_VALUE (0x8000000000000000)");
-                                if (!usages[uidx])
-                                    expert_add_info_format(pinfo, e, &ei_{proto}_missing, "required value is missing");
-                            }} else {{
-                                proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%" PRIi64, x);
-                            }}
-                        }}
-                        break;
+                    {mk_int_case(1, True, proto)}
+                    {mk_int_case(2, True, proto)}
+                    {mk_int_case(4, True, proto)}
+                    {mk_int_case(8, True, proto)}
                 }}
                 off += fields[fidx].size;
                 ++fidx;
