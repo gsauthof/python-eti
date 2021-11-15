@@ -86,6 +86,7 @@ def gen_header(proto, desc, o=sys.stdout):
 #include <inttypes.h>
 #include <stdio.h>         // snprintf()
 
+
 /* Prototypes */
 /* (Required to prevent [-Wmissing-prototypes] warnings */
 void proto_reg_handoff_{proto}(void);
@@ -446,6 +447,11 @@ def gen_usage_table(min_templateid, n, ts, ams, o=sys.stdout):
                 print(f'        {k} {map_usage(e)} // {e.get("name")}#{i}', file=o)
                 i += 1
 
+    # NB: the last element is a filler to simplify the out-of-bounds check
+    #     (cf. the uidx DISSECTOR_ASSER_CMPUINIT() before the switch statement)
+    #     when the ETI_EOF of the message whose usage information comes last
+    #     is reached
+    print(f'        , 0 // filler', file=o)
     print('    };', file=o)
     xs = [ '-1' ] * n
     t2n = dict(ts)
@@ -603,7 +609,8 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
 ''', file=o)
 
     print(f'''    int uidx = tid2uidx[templateid - {min_templateid}];
-    DISSECTOR_ASSERT(uidx >= 0);
+    DISSECTOR_ASSERT_CMPINT(uidx, >=, 0);
+    DISSECTOR_ASSERT_CMPUINT(((size_t)uidx), <, (sizeof usages / sizeof usages[0]));
 ''', file=o)
 
     print(f'''    int old_fidx = 0;
@@ -615,13 +622,15 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     unsigned repeats = 0;
     proto_tree *t = root;
     while (top) {{
-        DISSECTOR_ASSERT(fidx >= 0);
-        DISSECTOR_ASSERT((size_t)fidx < sizeof fields / sizeof fields[0]);
-        DISSECTOR_ASSERT(uidx >= 0);
-        DISSECTOR_ASSERT((size_t)uidx < sizeof usages / sizeof usages[0]);
+        DISSECTOR_ASSERT_CMPINT(fidx, >=, 0);
+        DISSECTOR_ASSERT_CMPUINT(((size_t)fidx), <, (sizeof fields / sizeof fields[0]));
+        DISSECTOR_ASSERT_CMPINT(uidx, >=, 0);
+        DISSECTOR_ASSERT_CMPUINT(((size_t)uidx), <, (sizeof usages / sizeof usages[0]));
+
         switch (fields[fidx].type) {{
             case ETI_EOF:
-                DISSECTOR_ASSERT(top == 1 || top == 2);
+                DISSECTOR_ASSERT_CMPUINT(top, >=, 1);
+                DISSECTOR_ASSERT_CMPUINT(top, <=, 2);
                 if (t != root)
                     proto_item_set_len(t, off - struct_off);
                 if (repeats) {{
@@ -638,7 +647,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 break;
             case ETI_VAR_STRUCT:
             case ETI_STRUCT:
-                DISSECTOR_ASSERT(fields[fidx].counter_off < sizeof counter / sizeof counter[0]);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].counter_off, <, sizeof counter / sizeof counter[0]);
                 repeats = fields[fidx].type == ETI_VAR_STRUCT ? counter[fields[fidx].counter_off] : 1;
                 if (repeats) {{
                     --repeats;
@@ -647,7 +656,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                     old_fidx = fidx;
                     old_uidx = uidx;
                     fidx = fields[fidx].field_handle_idx;
-                    DISSECTOR_ASSERT(top == 1);
+                    DISSECTOR_ASSERT_CMPUINT(top, ==, 1);
                     ++top;
                 }} else {{
                     ++fidx;
@@ -679,15 +688,15 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 ++uidx;
                 break;
             case ETI_VAR_STRING:
-                DISSECTOR_ASSERT(fields[fidx].counter_off < sizeof counter / sizeof counter[0]);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].counter_off, <, sizeof counter / sizeof counter[0]);
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, counter[fields[fidx].counter_off], ENC_ASCII);
                 off += counter[fields[fidx].counter_off];
                 ++fidx;
                 ++uidx;
                 break;
             case ETI_COUNTER:
-                DISSECTOR_ASSERT(fields[fidx].counter_off < sizeof counter / sizeof counter[0]);
-                DISSECTOR_ASSERT(fields[fidx].size <= 2);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].counter_off, <, sizeof counter / sizeof counter[0]);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].size, <=, 2);
                 {{
                     switch (fields[fidx].size) {{
                         case 1:
@@ -760,9 +769,9 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 ++uidx;
                 break;
             case ETI_FIXED_POINT:
-                DISSECTOR_ASSERT(fields[fidx].size == 8);
-                DISSECTOR_ASSERT(fields[fidx].counter_off > 0);
-                DISSECTOR_ASSERT(fields[fidx].counter_off <= 16);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].size, ==, 8);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].counter_off, >, 0);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].counter_off, <=, 16);
                 {{
                     gint64 x = tvb_get_letohi64(tvb, off);
                     if (x == INT64_MIN) {{
@@ -775,7 +784,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                             slack += 1;
                         char s[21];
                         int n = snprintf(s, sizeof s, "%0*" PRIi64, slack, x);
-                        DISSECTOR_ASSERT(n > 0);
+                        DISSECTOR_ASSERT_CMPUINT(n, >, 0);
                         unsigned k = n - fields[fidx].counter_off;
                         proto_tree_add_int64_format_value(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, x, "%.*s.%s", k, s, s + k);
                     }}
@@ -785,14 +794,14 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
                 ++uidx;
                 break;
             case ETI_TIMESTAMP_NS:
-                DISSECTOR_ASSERT(fields[fidx].size == 8);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].size, ==, 8);
                 proto_tree_add_item(t, hf_{proto}[fields[fidx].field_handle_idx], tvb, off, fields[fidx].size, ENC_LITTLE_ENDIAN | ENC_TIME_NSECS);
                 off += fields[fidx].size;
                 ++fidx;
                 ++uidx;
                 break;
             case ETI_DSCP:
-                DISSECTOR_ASSERT(fields[fidx].size == 1);
+                DISSECTOR_ASSERT_CMPUINT(fields[fidx].size, ==, 1);
                 proto_tree_add_bitmask(t, tvb, off, hf_{proto}[fields[fidx].field_handle_idx], ett_{proto}_dscp, dscp_bits, ENC_LITTLE_ENDIAN);
                 off += fields[fidx].size;
                 ++fidx;

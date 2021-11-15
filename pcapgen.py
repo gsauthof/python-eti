@@ -134,6 +134,16 @@ def mk_invalid_enum(bs):
     n = m.pack_into(bs)
     return memoryview(bs)[:n]
 
+# i.e. check the message whose usage information in the usages
+# array comes last in eti2wireshark generated code
+def mk_user_logout_response(bs):
+    m = eti.UserLogoutResponse()
+    m.ResponseHeader.RequestTime = 1637015805000000000
+    m.ResponseHeader.SendingTime = 1637015806000000000
+    m.ResponseHeader.MsgSeqNum = 711
+    n = m.pack_into(bs)
+    return memoryview(bs)[:n]
+
 def mk_heartbeat(bs):
     ph = eobi.PacketHeader()
     ph.ApplSeqNum = 4712
@@ -242,6 +252,9 @@ def gen_eti():
     dump(u)
 
     u = mk_invalid_enum(buf)
+    dump(u)
+
+    u = mk_user_logout_response(buf)
     dump(u)
 
     u = mk_unaligned('show unaligned', 666, buf)
