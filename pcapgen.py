@@ -17,9 +17,11 @@
 
 import argparse
 
-import eti.v9_1 as eti
-import xti.v9_1 as xti
-import eobi.v9_1 as eobi
+# NB: imported via main()
+#import eti.v9_1 as eti
+#import xti.v9_1 as xti
+#import eobi.v9_1 as eobi
+
 import sys
 
 def mk_reject(text, seq, bs):
@@ -289,11 +291,23 @@ def gen_eobi():
 def parse_args():
     p = argparse.ArgumentParser(description='Generate dummy ETI/EOBI PCAP files')
     p.add_argument('--eobi', action='store_true', help='generate EOBI PCAP instead of ETI')
+    p.add_argument('--release', '-r', default='9.1', help='parse eti/eobi v9.0 (default: %(default)s)')
     args = p.parse_args()
     return args
 
 def main():
     args = parse_args()
+
+    if args.release:
+        global eti
+        global xti
+        global eobi
+        import importlib
+        rel = args.release.replace('.', '_')
+        eobi = importlib.import_module(f'eobi.v{rel}')
+        eti  = importlib.import_module(f'eti.v{rel}')
+        xti  = importlib.import_module(f'xti.v{rel}')
+
     if args.eobi:
         gen_eobi()
     else:
