@@ -19,6 +19,11 @@ import xml.etree.ElementTree as ET
 from etimodel import get_min_sizes, get_max_sizes
 
 
+
+def get_used_types(st):
+    xs = set(y.get('type') for _, x in st.items() for y in x)
+    return xs
+
 def get_data_types(d):
     r = d.getroot()
     x = r.find('DataTypes')
@@ -94,64 +99,83 @@ void proto_register_{proto}(void);
 ''', file=o)
 
 
-def gen_enums(dt, ts, o=sys.stdout):
-    off = 0
-    name2off = { 'TemplateID': off }
-    dedup = {}
-    print('static const value_string enum_names[] = {', file=o)
-    for i, (tid, name) in enumerate(ts):
-        if i == 0:
-            suf = ' // TemplateID@0'
-            c = ' '
+def name2ident(name):
+    ll = True
+    xs = []
+    for i, c in enumerate(name):
+        if c.isupper():
+            if i > 0 and ll:
+                xs.append('_')
+            xs.append(c.lower())
+            ll = False
         else:
-            suf = ''
-            c = ','
-        print(f'    {c} {{ {tid}, "{name}" }}{suf}', file=o)
-        off += 1
-    print('    , { 0, NULL }', file=o)
-    off += 1
+            xs.append(c)
+            ll = True
+    return ''.join(xs)
+
+def gen_enums(dt, ts, o=sys.stdout):
+    print('static const value_string template_id_vals[] = { // TemplateID', file=o)
+    min_tid, max_tid = ts[0][0], ts[-1][0]
+    xs = [None] * (max_tid - min_tid + 1)
+    for tid, name in ts:
+        xs[tid-min_tid] = name
+    for i, name in enumerate(xs):
+        if name is None:
+            print(f'    {{ {min_tid + i}, "Unknown" }},', file=o)
+        else:
+            print(f'    {{ {min_tid + i}, "{name}" }},', file=o)
+    print('''    { 0, NULL }
+};
+static value_string_ext template_id_vals_ext = VALUE_STRING_EXT_INIT(template_id_vals);''', file=o)
+    name2access = { 'TemplateID': '&template_id_vals_ext' }
+
+    dedup = {}
     for name, e in dt.items():
-        vs = e.findall('ValidValue')
+        vs = [ (x.get('value'), x.get('name')) for x in e.findall('ValidValue') ]
         if not vs:
             continue
         if e.get('rootType') == 'String' and e.get('size') != '1':
             continue
-        if e.get('type') == 'int':
-            vs.sort(key = lambda x : int(x.get('value')))
-        else:
-            vs.sort(key = lambda x : x.get('value'))
-        s = '-'.join(v.get('name') for v in vs)
-        x = dedup.get(s, (off, name))
-        if x[0] == off:
-            dedup[s] = (off, name)
-        else:
-            print(f'    // {name} => {x[1]}', file=o)
-            name2off[name] = x[0]
-            continue
-        name2off[name] = off
-        for i, v in enumerate(vs):
-            suf = f' // {name}@{off}' if i == 0 else ''
-            if e.get('rootType') == 'String':
-                print(f'''    , {{ '{v.get("value")}', "{v.get("name")}" }}{suf}''', file=o)
-            else:
-                print(f'    , {{ {v.get("value")}, "{v.get("name")}" }}{suf}', file=o)
-            off += 1
-        nv = e.get('noValue')
-        ws = [ v.get('value') for v in vs ]
-        if nv not in ws:
-            if nv.startswith('0x0'):
-                nv = '0'
-            print(f'    , {{ {nv}, "NO_VALUE" }}', file=o)
-            off += 1
-        print('    , { 0, NULL }', file=o)
-        off += 1
-    print('};', file=o)
 
-    print('enum Enums_Index {', file=o)
-    for i, (name, off) in enumerate(name2off.items()):
-        c = ' ' if i == 0 else ','
-        print(f'    {c} {name.upper() + "_ENUMS_IDX"} = {off}', file=o)
-    print('};', file=o)
+        ident = name2ident(name)
+
+        nv = e.get('noValue')
+        ws = [ v[0] for v in vs ]
+        if nv not in ws:
+            if nv.startswith('0x0') and e.get('rootType') == 'String':
+                nv = '\0'
+            vs.append( (nv, 'NO_VALUE') )
+
+        if e.get('type') == 'int':
+            vs.sort(key = lambda x : int(x[0], 0))
+        else:
+            vs.sort(key = lambda x : ord(x[0]))
+        s = '-'.join(f'{v[0]}:{v[1]}' for v in vs)
+        x = dedup.get(s)
+        if x is None:
+            dedup[s] = name
+        else:
+            name2access[name] = name2access[x]
+            print(f'// {name} aliased by {x}', file=o)
+            continue
+
+        print(f'static const value_string {ident}_vals[] = {{ // {name}', file=o)
+        for i, v in enumerate(vs):
+            if e.get('rootType') == 'String':
+                k = f"'{v[0]}'" if ord(v[0]) != 0 else '0'
+                print(f'''    {{ {k}, "{v[1]}" }},''', file=o)
+            else:
+                print(f'    {{ {v[0]}, "{v[1]}" }},', file=o)
+        print('''    { 0, NULL }
+};''', file=o)
+
+        if len(vs) > 7:
+            print(f'static value_string_ext {ident}_vals_ext = VALUE_STRING_EXT_INIT({ident}_vals);', file=o)
+            name2access[name] = f'&{ident}_vals_ext'
+        else:
+            name2access[name] = f'VALS({ident}_vals)'
+
+    return name2access
 
 
 def get_fields(st, dt):
@@ -231,7 +255,7 @@ def type2enc(t):
         return 'STR_ASCII'
     raise RuntimeError('unexpected type')
 
-def gen_field_info(st, dt, proto='eti', o=sys.stdout):
+def gen_field_info(st, dt, n2enum, proto='eti', o=sys.stdout):
     print('    static hf_register_info hf[] ={', file=o)
     vs = get_fields(st, dt)
     for i, (name, t) in enumerate(vs):
@@ -239,12 +263,17 @@ def gen_field_info(st, dt, proto='eti', o=sys.stdout):
         ft = type2ft(t)
         enc = type2enc(t)
         if is_enum(t) and not is_dscp(t):
-            vals = f'VALS(&enum_names[{t.get("name").upper()}_ENUMS_IDX])'
+            vals = n2enum[t.get('name')]
+            if vals.startswith('&'):
+                extra_enc =  '| BASE_EXT_STRING'
+            else:
+                extra_enc = ''
         else:
             vals = 'NULL'
+            extra_enc = ''
         print(f'''        {c} {{ &hf_{proto}[{name.upper()}_FH_IDX],
               {{ "{name}", "{proto}.{name.lower()}",
-                {ft}, {enc}, {vals}, 0x0,
+                {ft}, {enc}{extra_enc}, {vals}, 0x0,
                 NULL, HFILL }}
           }}''', file=o)
     print(f'''        , {{ &hf_{proto}_dscp_exec_summary,
@@ -557,7 +586,7 @@ dissect_{proto}_message(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree, voi
     col_set_str(pinfo->cinfo, COL_PROTOCOL, "{proto.upper()}");
     col_clear(pinfo->cinfo, COL_INFO);
     guint16 templateid = tvb_get_letohs(tvb, {template_off});
-    const char *template_str = val_to_str(templateid, &enum_names[TEMPLATEID_ENUMS_IDX], "Unknown {proto.upper()} template: 0x%04x");
+    const char *template_str = val_to_str_ext(templateid, &template_id_vals_ext, "Unknown {proto.upper()} template: 0x%04x");
     col_add_fstr(pinfo->cinfo, COL_INFO, "%s", template_str);
 
     /* create display subtree for the protocol */
@@ -843,11 +872,11 @@ dissect_{proto}(tvbuff_t *tvb, packet_info *pinfo, proto_tree *tree,
 }}
 ''', file=o)
 
-def gen_register_fn(st, dt, proto, desc, o=sys.stdout):
+def gen_register_fn(st, dt, n2enum, proto, desc, o=sys.stdout):
     print(f'''void
 proto_register_{proto}(void)
 {{''', file=o)
-    gen_field_info(st, dt, proto, o)
+    gen_field_info(st, dt, n2enum, proto, o)
 
     print(f'''    static ei_register_info ei[] = {{
         {{
@@ -1075,17 +1104,21 @@ def main():
 
     dt = get_data_types(d)
     st = get_structs(d)
+    used = get_used_types(st)
+    for k in list(dt.keys()):
+        if k not in used:
+            del dt[k]
     ts = get_templates(st)
     ams = d.getroot().find('ApplicationMessages')
 
     gen_header(proto, desc, o)
     print(f'static int proto_{proto} = -1;', file=o)
     gen_field_handles(st, dt, proto, o)
-    gen_enums(dt, ts, o)
+    n2enum = gen_enums(dt, ts, o)
     gen_dissect_structs(o)
     sh = gen_subtree_handles(st, proto, o)
     gen_dissect_fn(st, dt, ts, sh, ams, proto, o)
-    gen_register_fn(st, dt, proto, desc, o)
+    gen_register_fn(st, dt, n2enum, proto, desc, o)
     gen_handoff_fn(proto, o)
 
 
