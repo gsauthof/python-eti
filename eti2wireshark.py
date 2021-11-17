@@ -200,9 +200,10 @@ def get_fields(st, dt):
 def gen_field_handles(st, dt, proto, o=sys.stdout):
     print(f'''static expert_field ei_{proto}_counter_overflow = EI_INIT;
 static expert_field ei_{proto}_invalid_template = EI_INIT;
-static expert_field ei_{proto}_invalid_length = EI_INIT;
-static expert_field ei_{proto}_unaligned = EI_INIT;
-static expert_field ei_{proto}_missing = EI_INIT;
+static expert_field ei_{proto}_invalid_length = EI_INIT;''', file=o)
+    if not proto.startswith('eobi'):
+        print(f'static expert_field ei_{proto}_unaligned = EI_INIT;', file=o)
+    print(f'''static expert_field ei_{proto}_missing = EI_INIT;
 static expert_field ei_{proto}_overused = EI_INIT;
 ''', file=o)
 
@@ -976,7 +977,7 @@ proto_reg_handoff_{proto}(void)
     }};
     for (unsigned i = 0; i < sizeof ports / sizeof ports[0]; ++i)
         dissector_add_uint("udp.port", ports[i], {proto}_handle);''', file=o)
-    print('}\n', file=o)
+    print('}', file=o)
 
 def is_int(t):
     if t is not None:
