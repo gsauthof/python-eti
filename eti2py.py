@@ -321,6 +321,12 @@ def gen_fields(e, st, dt, us, sizes, min_sizes, version, o=sys.stdout, comment=F
                 off += l
 
 
+def get_header_name(m):
+    for e in m:
+        name = e.get('name')
+        assert(name.startswith('MessageHeader'))
+        return name
+
 def gen_block(name, e, st, dt, us, sizes, min_sizes, max_sizes, version, o=sys.stdout):
     print(f'@dataclass\nclass {name}:')
     print(f'    sizes = ({min_sizes[name]}, {max_sizes[name]})\n', file=o)
@@ -330,7 +336,7 @@ def gen_block(name, e, st, dt, us, sizes, min_sizes, max_sizes, version, o=sys.s
 
     print(f'\n    def update_length(self):', file=o)
     if sizes[name] == 0 and e.get('type') == 'Message':
-        header = 'MessageHeaderOut' if e.find('Member[@name="MessageHeaderIn"]') is None else 'MessageHeaderIn'
+        header = get_header_name(e)
         ls = []
         seen_var_string = False
         for xs in ms:
