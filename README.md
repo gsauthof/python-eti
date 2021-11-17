@@ -317,12 +317,12 @@ are avaiable under an Open Source license.
 
 ## See also
 
-The benchmark test case relies on [pytest benchmark][pybench]
+- The benchmark test case relies on [pytest benchmark][pybench]
 (Fedora package: python3-pytest-benchmark).
-
-The `pcap_dump.py` example uses the [dpkt][dpkt] package for
+- The `pcapdump.py` example uses the [dpkt][dpkt] package for
 parsing PCAP files and skipping over Ethernet/IP/UDP/TCP headers
 (Fedora package: python3-dpkt).
+- Wikipedia's [List of Electronic Trading Protocols][wptp]
 
 [enum]: https://docs.python.org/3/library/enum.html
 [dc]: https://docs.python.org/3/library/dataclasses.html
@@ -334,4 +334,5 @@ parsing PCAP files and skipping over Ethernet/IP/UDP/TCP headers
 [dscp]: https://en.wikipedia.org/wiki/Differentiated_services
 [pypy]: http://pypy.org/
 [dpkt]: https://github.com/kbandla/dpkt
+[wptp]: https://en.wikipedia.org/wiki/List_of_electronic_trading_protocols
 
