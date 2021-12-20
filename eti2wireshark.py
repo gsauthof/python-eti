@@ -891,12 +891,13 @@ proto_register_{proto}(void)
         {{
             &ei_{proto}_invalid_length,
             {{ "{proto}.invalid_length", PI_PROTOCOL, PI_ERROR, "Invalid Body Length", EXPFILL }}
-        }},
-        {{
+        }},''', file=o)
+    if not proto.startswith('eobi'):
+        print(f'''        {{
             &ei_{proto}_unaligned,
             {{ "{proto}.unaligned", PI_PROTOCOL, PI_ERROR, "A Body Length not divisible by 8 leads to unaligned followup messages", EXPFILL }}
-        }},
-        {{
+        }},''', file=o)
+    print(f'''        {{
             &ei_{proto}_missing,
             {{ "{proto}.missing", PI_PROTOCOL, PI_WARN, "A required value is missing", EXPFILL }}
         }},
