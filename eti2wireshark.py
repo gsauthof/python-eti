@@ -253,7 +253,9 @@ def type2enc(t):
         else:
             return 'BASE_DEC'
     if is_fixed_string(t) or is_var_string(t):
-        return 'STR_ASCII'
+        # previously 'STR_ASCII', which was removed upstream
+        # cf. 19dcb725b61e384f665ad4b955f3b78f63e626d9
+        return 'BASE_NONE'
     raise RuntimeError('unexpected type')
 
 def gen_field_info(st, dt, n2enum, proto='eti', o=sys.stdout):
