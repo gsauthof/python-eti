@@ -66,6 +66,7 @@ Deutsche Börse publishes the ETI protocol descriptions on their
 web sites. Since they are sometimes kind of hard to find I include
 some links:
 
+- [ETI 11.1](https://www.eurex.com/resource/blob/3470960/8f0c20e941ce88ff0bd17e8b0f0f05dc/data/T7_R.11.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.1.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release11-1/Release-11.1-3276378?frag=3276400) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-11-1)
 - [ETI 11](https://www.eurex.com/resource/blob/3312766/b0432bd1900c4e9926dffe261fd11e61/data/T7_R.11.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release11-0/Release-11.0-3038780?frag=3038802) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-11-0)
 - [ETI 10.1](https://www.eurex.com/resource/blob/3116352/44bc86eee29639a491664d3b71cd34fc/data/T7_R.10.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-1/Release-10.1-2862880?frag=2862902) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-10-1)
 - [ETI 10](https://www.eurex.com/resource/blob/2827374/da41cfed961c5635fd438d848af30a43/data/T7_R.10.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_v.1.2.zip)
@@ -93,7 +94,8 @@ some links:
 
 EOBI descriptions:
 
-- [EOBI 11](https://www.eurex.com/resource/blob/3312796/8a105318a6a80f40b168a9c10bcba26a/data/T7_EOBI_XML_Representation_v.11.0.2.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release11-0/Release-11.0-3038780?frag=3038800) or via [Xetra system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-11-0)
+- [EOBI 11.1](https://www.eurex.com/resource/blob/3432972/4eab41740c005188a4de6a94c132df04/data/T7_EOBI_XML_Representation_v.11.1.0.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release11-1) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-11-1)
+- [EOBI 11](https://www.eurex.com/resource/blob/3312796/8a105318a6a80f40b168a9c10bcba26a/data/T7_EOBI_XML_Representation_v.11.0.2.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release11-0/Release-11.0-3038780?frag=3038800) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-11-0)
 - [EOBI 10.1](https://www.eurex.com/resource/blob/3093156/a85addae564114a5e0a7abaec9b17189/data/T7_EOBI_XML_Representation_v.10.1.1.zip) via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-1/Release-10.1-2862880?frag=2862900) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-10-1)
 - [EOBI 10](https://www.eurex.com/resource/blob/2827418/d9c79556c0aea9bfc9db8b7ef262fe4b/data/T7_EOBI_XML_Representation_v.10.0.1.zip)
   via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release10-0/Release-10.0-2692700?frag=2692720) or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-10-0)
