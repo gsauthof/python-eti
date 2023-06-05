@@ -132,6 +132,8 @@ def gen_enums(dt, ts, o=sys.stdout):
             return
         if nv.startswith('0x0'):
             nv = '0'
+        elif nv.startswith('0x80'):
+            nv = str(2**(8*int(len(nv)/2-1) - 1) * -1)
         if nv:
             print(f'    NO_VALUE = {nv}', file=o)
 
