@@ -403,7 +403,7 @@ def gen_pack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
         if is_elementary(t):
             print(f'        self.st({i}).pack_into(buf, {off_str}, {args})', file=o)
             if dyn:
-                print('f    o += l', file=o)
+                print(f'        o += {l}', file=o)
         else:
             if is_var_string(t):
                 if not dyn:
@@ -424,7 +424,7 @@ def gen_pack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
             else:
                 print(f'        self.{xs[0].get("name")}.pack_into(buf, {off_str})', file=o)
                 if dyn:
-                    print('f    o += l', file=o)
+                    print(f'    o += l', file=o)
         off += l
 
     if dyn:
@@ -458,14 +458,15 @@ def gen_unpack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
                 off_str = f'off + {off}'
         l = sum(sizes[m.get("type")] for m in xs)
         if is_elementary(t):
-            print(f'        {args} = self.st({i}).unpack_from(buf, {off_str})', file=o)
+            if args:
+                print(f'        {args} = self.st({i}).unpack_from(buf, {off_str})', file=o)
             es = [ m for m in xs if is_enum(dt.get(m.get('type'))) ]
             lhs = ', '.join('self.' + e.get('name') for e in es)
             rhs = ', '.join(f"enumerize(self.{e.get('name')}, {dt.get(e.get('type')).get('name')})" for e in es)
             if lhs:
                 print(f'        {lhs} = {rhs}', file=o)
             if dyn:
-                print('f    o += l', file=o)
+                print(f'        o += {l}', file=o)
         else:
             if is_var_string(t):
                 if not dyn:
@@ -487,7 +488,7 @@ def gen_unpack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
             else:
                 print(f'        self.{xs[0].get("name")}.unpack_from(buf, {off_str})', file=o)
                 if dyn:
-                    print('f    o += l', file=o)
+                    print(f'        o += {l}', file=o)
         off += l
 
     if dyn:
