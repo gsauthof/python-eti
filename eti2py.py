@@ -312,7 +312,7 @@ def gen_fields(e, st, dt, us, sizes, min_sizes, version, o=sys.stdout, comment=F
         print(f' # {", ".join(atts)}', file=o)
 
         s = st.get(m.get('type'))
-        if s:
+        if s is not None:
             gen_fields(s, st, dt, us, sizes, min_sizes, version, o, comment=True, off=off, fname=f"{e.get('name')}.{m.get('name')}")
 
         if off is not None:
