@@ -15,7 +15,7 @@ import random
 import struct
 import sys
 
-import eti.v9_1 as eti
+import eti.v13_0 as eti
 
 from dressup import pformat
 
@@ -45,9 +45,10 @@ def send_response(wstream, xs, seq, bs):
     if T is not None:
         m = T()
         seq = set_seq_num(m, seq)
+        m.update_length()
 
         n = m.pack_into(bs)
-        log.info(f'Sending Response: {T}')
+        log.info(f'Sending Response: {T} (n={n})')
         wstream.write(memoryview(bs)[:n])
 
     return send_response(wstream, zs, seq, bs)

@@ -66,6 +66,9 @@ Deutsche Börse publishes the ETI protocol descriptions on their
 web sites. Since they are sometimes kind of hard to find I include
 some links:
 
+- [ETI 13.0](https://www.eurex.com/resource/blob/4118928/c8f379034ccd346c69b8725d8834dd47/data/T7_R.13.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_3.zip)
+  via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/archive/Release-13.0-3977976?frag=3977998)
+  or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release13)
 - [ETI 12.1](https://www.eurex.com/resource/blob/3881084/3d853bcf0f155d740763b99e9b95088e/data/T7_R.12.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip)
   via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release12-1/Release-12.1-3800846?frag=3800868)
   or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-12-1)
@@ -98,6 +101,9 @@ some links:
 
 EOBI descriptions:
 
+- [EOBI 13.0](https://www.eurex.com/resource/blob/4095430/f6c09c60b2eff0b508aca1e5860b0731/data/T7_R.13.0_%20EOBI_XML_Representation_Version_2.zip)
+  via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/archive/Release-13.0-3977976?frag=3977996)
+  or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release13)
 - [EOBI 12.1](https://www.eurex.com/resource/blob/3935338/8bc01e6f7fa63ab0de2a3b3225f483bd/data/T7_R.12.1_%20EOBI_XML_Representation_Version_2.zip)
   via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release12-1/Release-12.1-3800846?frag=3800866)
   or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7-release-12-1)

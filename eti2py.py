@@ -424,7 +424,7 @@ def gen_pack(name, e, st, dt, sizes, min_sizes, max_sizes, ms, o=sys.stdout):
             else:
                 print(f'        self.{xs[0].get("name")}.pack_into(buf, {off_str})', file=o)
                 if dyn:
-                    print(f'    o += l', file=o)
+                    print(f'        o += {l}', file=o)
         off += l
 
     if dyn:
