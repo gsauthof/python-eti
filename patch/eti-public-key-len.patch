@@ -1,0 +1,11 @@
+--- b/temp/T7_ETI_13_0/eti_Derivatives.xml 2025-01-27 2025-03-09 19:15:08.909679819 +0100
++++ b/temp/T7_ETI_13_0/eti_Derivatives.xml 2025-01-27 2025-03-09 19:15:49.577088465 +0100
+@@ -15183,7 +15183,7 @@
+       <ValidValue name="non_standard_volatility_strategy" value="13" description="Non-Standard Volatility Strategy"/>
+     </DataType>
+     <DataType name="PublicKey" type="String" rootType="String" numericID="25233" package="eti_Derivatives" size="814" variableSize="true" counter="PublicKeyLen" description="" range="A-Z,a-z,0-9,\x2B,\x2F,\x3D,\x2D,\x20,\x0A,\x0D"/>
+-    <DataType name="PublicKeyLen" type="int" rootType="int" numericID="25242" package="eti_Derivatives" size="2" description="" minValue="0" maxValue="814" noValue="0xFFFF"/>
++    <DataType name="PublicKeyLen" type="Counter" rootType="int" numericID="25242" package="eti_Derivatives" size="2" description="" minValue="0" maxValue="814" noValue="0xFFFF"/>
+     <DataType name="PutOrCall" type="int" rootType="int" numericID="201" package="eti_Derivatives" size="1" description="" minValue="0" maxValue="1" noValue="0xFF">
+       <ValidValue name="Put" value="0" description="Put"/>
+       <ValidValue name="Call" value="1" description="Call"/>
