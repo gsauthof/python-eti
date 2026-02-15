@@ -66,6 +66,9 @@ Deutsche Börse publishes the ETI protocol descriptions on their
 web sites. Since they are sometimes kind of hard to find I include
 some links:
 
+- [ETI 14.0](https://www.eurex.com/resource/blob/4629436/aa33fd54021ac40840ea7c7646a870f2/data/T7_R.14.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip)
+  via [Xetra system documentation](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release14-0/Release-14.0-4492486?frag=4492508)
+  or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/T7-Release-14.0)
 - [ETI 13.1](https://www.eurex.com/resource/blob/4332324/7c358b1edeef76eeb3b758c437d9c955/data/T7_R.13.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip)
   via [Xetra system documentation](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release13-1/Release-13.1-4200094?frag=4200116)
   or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/T7-Release-13.1)
@@ -150,16 +153,16 @@ Besides the protocols there is also the N7 Network Access Guide
 which lists the various ports and IP addresses in use for these
 protocols:
 
-- [Xetra Release 12.1 Network Access Section](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release12-1)
-- Direct link: [N7 Network Access-Guide v2.3.1 Release 12.1 (Xetra)](https://www.xetra.com/resource/blob/3901440/ccd9e4efbb9df1c062c02f5796a8da22/data/N7_-_Network_Access_Guide.v.2.3.1.pdf)
-- Direct link: [N7 Network Access-Guide v2.3.1 Release 12.1 (Eurex)](https://www.eurex.com/resource/blob/3901444/ccd9e4efbb9df1c062c02f5796a8da22/data/N7_-_Network_Access_Guide.v.2.3.1.pdf)
+- [Xetra Release 14.0 Network Access Section](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release14-0/Release-14.0-4492486?frag=4492510)
+- Direct link: [N7 Network Access-Guide v2.9.2 Release 14.0 (Xetra)](https://www.xetra.com/resource/blob/4591790/649d67852ef4ed88c6a16c0d7a06337f/data/N7_-_Network_Access_Guide.v.2.9.2.pdf)
+- Direct link: [N7 Network Access-Guide v2.9.2 Release 14.0 (Eurex)](https://www.eurex.com/resource/blob/4836808/649d67852ef4ed88c6a16c0d7a06337f/data/N7_-_Network_Access_Guide.v.2.9.2.pdf)
 
 The functional reference gives some background on how the
 exchange system (the order matching etc.) is supposed to work:
 
-- [Xetra Release 12.1 Overview and Functionality Section](https://www.xetra.com/xetra-en/technology/t7/system-documentation/release12-1)
-- Direct link: [T7 Functional Reference Release 12.1 (Xetra)](https://www.xetra.com/resource/blob/3962830/c072b3f22656c64c6e3ea5e8b7b8a7ff/data/T7_Release_12.1_-_Functional_Reference_Version_3.pdf)
-- Direct link: [T7 Functional Reference Release 12.1 (Eurex)](https://www.eurex.com/resource/blob/3962832/c072b3f22656c64c6e3ea5e8b7b8a7ff/data/T7_Release_12.1_-_Functional_Reference_Version_3.pdf)
+- [Xetra Release 14.0 Overview and Functionality Section](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release14-0)
+- Direct link: [T7 Functional Reference Release 14.0 (Xetra)](https://www.xetra.com/resource/blob/4591804/a3209e00271dc60f84539e042cddcda5/data/T7_Release_14.0_-_Functional_Reference_Version_3.pdf)
+- Direct link: [T7 Functional Reference Release 14.0 (Eurex)](https://www.eurex.com/resource/blob/4749400/a3209e00271dc60f84539e042cddcda5/data/T7_Release_14.0_-_Functional_Reference_Version_3.pdf)
 
 
 ## Python Notes
