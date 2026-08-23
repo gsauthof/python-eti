@@ -66,6 +66,9 @@ Deutsche Börse publishes the ETI protocol descriptions on their
 web sites. Since they are sometimes kind of hard to find I include
 some links:
 
+- [ETI 15.0](https://www.eurex.com/resource/blob/5411648/98579acd90ea352ca2e223114fae34bd/data/T7_R.15.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_1.zip)
+  via [Xetra system documentation](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release15-0)
+  or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7release15-0)
 - [ETI 14.1](https://www.eurex.com/resource/blob/5032540/1961cd153b2559c4c2b9495963b33993/data/T7_R.14.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip)
   via [Xetra system documentation](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release14-1)
   or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7release14-1)
@@ -110,6 +113,9 @@ some links:
 
 EOBI descriptions:
 
+- [EOBI 15.0](https://www.eurex.com/resource/blob/5411630/658c7505a8446e77dfca94320858a76a/data/T7_R.15.0_%20EOBI_XML_Representation_Version_1.zip)
+  via [Xetra system documentation](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release15-0)
+  or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7release15-0)
 - [EOBI 14.1](https://www.eurex.com/resource/blob/4978116/6671416fc57f5ae1c52c76f16b9acb88/data/T7_R.14.1_%20EOBI_XML_Representation_Version_1.zip)
   via [Xetra system documentation](https://www.cashmarket.deutsche-boerse.com/cash-en/Data-Tech/Initiatives-Releases/release14-1)
   or via [Eurex system documentation](https://www.eurex.com/ex-en/support/initiatives/t7release14-1)

@@ -1,4 +1,5 @@
 
+url_eti_15_0 = https://www.eurex.com/resource/blob/5411648/98579acd90ea352ca2e223114fae34bd/data/T7_R.15.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_1.zip
 url_eti_14_1 = https://www.eurex.com/resource/blob/5032540/1961cd153b2559c4c2b9495963b33993/data/T7_R.14.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip
 url_eti_14_0 = https://www.eurex.com/resource/blob/4629436/aa33fd54021ac40840ea7c7646a870f2/data/T7_R.14.0_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip
 url_eti_13_1 = https://www.eurex.com/resource/blob/4332324/7c358b1edeef76eeb3b758c437d9c955/data/T7_R.13.1_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts_Version_2.zip
@@ -15,6 +16,7 @@ url_eti_8_1 = https://www.eurex.com/resource/blob/1896940/e00bfe40dc3ceed5e99e3b
 url_eti_8_0 = https://www.eurex.com/resource/blob/1614576/6734877da8532f0e3859c8681c42f5e9/data/T7_Enhanced_Trading_Interface_-_XSD_XML_representation_and_layouts.zip
 
 
+url_eobi_15_0 = https://www.eurex.com/resource/blob/5411630/658c7505a8446e77dfca94320858a76a/data/T7_R.15.0_%20EOBI_XML_Representation_Version_1.zip
 url_eobi_14_1 = https://www.eurex.com/resource/blob/4978116/6671416fc57f5ae1c52c76f16b9acb88/data/T7_R.14.1_%20EOBI_XML_Representation_Version_1.zip
 url_eobi_14_0 = https://www.eurex.com/resource/blob/4629412/aedab4fce554559ee2a3d4b7a49614fc/data/T7_R.14.0_%20EOBI_XML_Representation_Version_2.zip
 url_eobi_13_1 = https://www.eurex.com/resource/blob/4332346/4b66e684ab3cf9e2cee92ca534cd1a68/data/T7_R.13.1_%20EOBI_XML_Representation_Version_2.zip
@@ -30,9 +32,9 @@ url_eobi_9_0 = https://www.xetra.com/resource/blob/2221290/00792edace1aaa799a42c
 url_eobi_8_1 = https://www.eurex.com/resource/blob/2128192/2209fe1a6f0a78a27baf6411698690b0/data/T7_EOBI_XML_Representation_v.8.1.1.zip
 url_eobi_8_0 = https://www.eurex.com/resource/blob/1741872/baeb2d87c8cc518f2ff2738a74356548/data/T7_EOBI_XML_Representation_v.8.0.3.zip
 
-eti_versions  = 14_1 14_0 13_1 13_0 12_1 12_0 11_1 11_0 10_1 10_0 9_1 9_0 8_1 8_0
+eti_versions  = 15_0 14_1 14_0 13_1 13_0 12_1 12_0 11_1 11_0 10_1 10_0 9_1 9_0 8_1 8_0
 
-eobi_versions = 14_1 14_0 13_1 13_0 12_1 12_0 11_1 11_0 10_1 10_0 9_1 9_0 8_1 8_0
+eobi_versions = 15_0 14_1 14_0 13_1 13_0 12_1 12_0 11_1 11_0 10_1 10_0 9_1 9_0 8_1 8_0
 
 
 all: all-eti
